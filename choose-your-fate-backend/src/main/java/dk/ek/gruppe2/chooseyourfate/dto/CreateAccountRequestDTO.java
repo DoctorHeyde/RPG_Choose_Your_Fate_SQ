@@ -1,5 +1,6 @@
 package dk.ek.gruppe2.chooseyourfate.dto;
 
+import dk.ek.gruppe2.chooseyourfate.enums.Role;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Account;
 
 public class CreateAccountRequestDTO {
@@ -7,6 +8,7 @@ public class CreateAccountRequestDTO {
     private String username;
     private String email;
     private String password;
+    private Role role;
 
     public CreateAccountRequestDTO() {
     }
@@ -15,7 +17,7 @@ public class CreateAccountRequestDTO {
         Account account = new Account();
         account.setUsername(this.username);
         account.setEmail(this.email);
-        account.setPassword(this.password);
+        account.setRole(this.role);
         return account;
     }
 
@@ -41,5 +43,13 @@ public class CreateAccountRequestDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }
