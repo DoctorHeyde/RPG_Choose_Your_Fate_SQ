@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `choose_your_fate`.`account` (
   `character_limit` INT NOT NULL,
   `email` VARCHAR(100) NOT NULL,
   `password` VARCHAR(100) NOT NULL,
-  role VARCHAR(50) NOT NULL,
+  `role` VARCHAR(50) NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;

@@ -7,12 +7,6 @@ import dk.ek.gruppe2.chooseyourfate.dto.LoginDTO;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.AccountRepository;
 import dk.ek.gruppe2.chooseyourfate.security.JwtUtil;
 import dk.ek.gruppe2.chooseyourfate.service.mysql.AccountService;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-
-import java.util.Base64;
-
-import javax.crypto.SecretKey;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,9 +23,7 @@ public class AuthenticationController {
     private final AccountService accountService;
 
     public AuthenticationController(AuthenticationManager authManager,
-                          JwtUtil jwtUtil,
-                          AccountRepository repo,
-                          
+                          JwtUtil jwtUtil,                          
                         AccountService accountService) {
         this.authManager = authManager;
         this.jwtUtil = jwtUtil;
@@ -47,8 +39,6 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public String login(@RequestBody LoginDTO request) {
-        // SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-        // System.out.println(Base64.getEncoder().encodeToString(key.getEncoded()));
 
         Authentication auth = authManager.authenticate(
             new UsernamePasswordAuthenticationToken(

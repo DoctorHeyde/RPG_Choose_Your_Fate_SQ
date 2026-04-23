@@ -8,7 +8,6 @@ public class CreateAccountRequestDTO {
     private String username;
     private String email;
     private String password;
-    private Role role;
 
     public CreateAccountRequestDTO() {
     }
@@ -17,7 +16,7 @@ public class CreateAccountRequestDTO {
         Account account = new Account();
         account.setUsername(this.username);
         account.setEmail(this.email);
-        account.setRole(this.role);
+        account.setRole(Role.ROLE_USER);
         return account;
     }
 
@@ -43,13 +42,5 @@ public class CreateAccountRequestDTO {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
     }
 }
