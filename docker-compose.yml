@@ -13,6 +13,19 @@ services:
       - rpg_mysql:/var/rpg_mysql
       - ./rpg_mysql:/docker-entrypoint-initdb.d
     hostname: rpg_mysql
+  rpg_neo4j:
+    image: neo4j:5.26
+    container_name: rpg_neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: "neo4j/12345678"
+    volumes:
+      - rpg_neo4j:/data
+    hostname: rpg_neo4j
 volumes:
   rpg_mysql:
+    driver: local
+  rpg_neo4j:
     driver: local

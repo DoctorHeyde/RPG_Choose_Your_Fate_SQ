@@ -14,7 +14,7 @@ public class Item {
     @Column(length = 45)
     private String name;
 
-    @Column(length = 45)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(length = 45)
