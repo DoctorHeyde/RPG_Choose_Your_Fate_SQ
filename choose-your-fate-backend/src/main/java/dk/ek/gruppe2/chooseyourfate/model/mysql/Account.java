@@ -1,6 +1,8 @@
 package dk.ek.gruppe2.chooseyourfate.model.mysql;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import dk.ek.gruppe2.chooseyourfate.enums.Role;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,21 +18,22 @@ public class Account {
     @Column(nullable = false, length = 50)
     private String username;
 
-    @Column(nullable = false, length = 100)
-    private String password;
-
     @Column(name = "character_limit", nullable = false)
     private Integer characterLimit;
 
     @Column(nullable = false, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 100)
-    private String salt;
+    @Column(name = "password",nullable = false, length = 100)
+    private String password;
 
     @OneToMany(mappedBy = "account")
     @JsonIgnore
     private List<CharacterAvatar> characters = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     public Account() {}
 
@@ -49,9 +52,9 @@ public class Account {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getSalt() { return salt; }
-    public void setSalt(String salt) { this.salt = salt; }
-
     public List<CharacterAvatar> getCharacters() { return characters; }
     public void setCharacters(List<CharacterAvatar> characters) { this.characters = characters; }
+
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 }

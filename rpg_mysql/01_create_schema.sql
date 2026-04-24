@@ -22,11 +22,11 @@ USE `choose_your_fate` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `choose_your_fate`.`account` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `username` VARCHAR(50) NOT NULL,
-  `password` VARCHAR(100) NOT NULL,
+  `username` VARCHAR(50) NOT NULL UNIQUE,
   `character_limit` INT NOT NULL,
-  `email` VARCHAR(100) NOT NULL,
-  `salt` VARCHAR(100) NOT NULL,
+  `email` VARCHAR(100) NOT NULL UNIQUE,
+  `password` VARCHAR(100) NOT NULL,
+  `role` VARCHAR(50) NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;

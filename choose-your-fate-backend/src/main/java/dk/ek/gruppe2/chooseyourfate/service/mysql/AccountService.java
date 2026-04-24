@@ -7,6 +7,7 @@ import dk.ek.gruppe2.chooseyourfate.model.mysql.Account;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.AccountRepository;
 import dk.ek.gruppe2.chooseyourfate.service.CrudService;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -16,9 +17,12 @@ import java.util.function.Function;
 public class AccountService extends CrudService<Account, Integer, AccountResponseDTO> {
 
     private final AccountRepository accountRepository;
+    private final PasswordEncoder encoder;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository,
+                                        PasswordEncoder encoder) {
         this.accountRepository = accountRepository;
+        this.encoder = encoder;
     }
 
     @Override
@@ -46,7 +50,7 @@ public class AccountService extends CrudService<Account, Integer, AccountRespons
 
         Account account = request.toEntity();
         account.setCharacterLimit(3);
-        account.setSalt(UUID.randomUUID().toString());
+        account.setPassword(encoder.encode(request.getPassword()));
 
         Account saved = accountRepository.save(account);
         return new AccountResponseDTO(saved);

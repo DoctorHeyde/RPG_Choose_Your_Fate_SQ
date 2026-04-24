@@ -1,5 +1,6 @@
 package dk.ek.gruppe2.chooseyourfate.dto;
 
+import dk.ek.gruppe2.chooseyourfate.enums.Role;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Account;
 
 public class CreateAccountRequestDTO {
@@ -15,7 +16,7 @@ public class CreateAccountRequestDTO {
         Account account = new Account();
         account.setUsername(this.username);
         account.setEmail(this.email);
-        account.setPassword(this.password);
+        account.setRole(Role.ROLE_USER);
         return account;
     }
 
