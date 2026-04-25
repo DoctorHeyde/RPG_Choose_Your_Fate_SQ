@@ -1,6 +1,6 @@
-# mysql server seeded with databases from dump files in the folder ./mysql
+# mysql server seeded with databases from dump files in the folder ./rpg_mysql
 # The seeding only happens on the first start when the volume is created.
-# If you need to reset the seeding, you need to "run docker compose down -v" to delete the volume
+# If you need to reset the seeding, run "docker compose down -v" to delete the volume.
 services:
   rpg_mysql:
     image: mysql:9.5.0
@@ -10,9 +10,21 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: "123456"
     volumes:
-      - rpg_mysql:/var/rpg_mysql
+      - rpg_mysql:/var/lib/mysql
       - ./rpg_mysql:/docker-entrypoint-initdb.d
     hostname: rpg_mysql
+
+  rpg_neo4j:
+    image: neo4j:5.26
+    container_name: rpg_neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: "neo4j/12345678"
+    volumes:
+      - rpg_neo4j:/data
+    hostname: rpg_neo4j
 
   rpg_mongodb:
     image: mongo:7.0
@@ -35,6 +47,8 @@ services:
 
 volumes:
   rpg_mysql:
+    driver: local
+  rpg_neo4j:
     driver: local
   rpg_mongodb:
     driver: local

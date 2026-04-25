@@ -20,5 +20,4 @@ public class AccountDocumentMongo {
     private String password;
     private int characterLimit;
     private String email;
-    private String salt;
 }
