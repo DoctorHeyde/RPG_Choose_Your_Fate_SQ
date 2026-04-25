@@ -6,6 +6,7 @@ import dk.ek.gruppe2.chooseyourfate.repository.mysql.*;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Session;
+import org.neo4j.driver.TransactionContext;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -104,15 +105,21 @@ public class Neo4jMigrationService {
         List<QuestHasItem> questItems = questHasItemRepository.findAll();
         List<SceneHasNpc> sceneNpcs = sceneHasNpcRepository.findAll();
 
-        createConstraints();
-
-        if (clearExisting) {
-            run("MATCH (n) DETACH DELETE n");
+        try (Session session = neo4jDriver.session()) {
+            createConstraints(session);
         }
 
-        migrateNodes(accounts, chapters, scenes, choices, quests, items, npcs, raceDetails, characters, characterPaths, inventories);
-        migrateCharacterDetails(characterDetails);
-        migrateRelationships(characterQuests, characterPathChoices, choiceItems, equipment, inventoryItems, questItems, sceneNpcs);
+        try (Session session = neo4jDriver.session()) {
+            session.executeWrite(tx -> {
+                if (clearExisting) {
+                    tx.run("MATCH (n) DETACH DELETE n").consume();
+                }
+                migrateNodes(tx, accounts, chapters, scenes, choices, quests, items, npcs, raceDetails, characters, characterPaths, inventories);
+                migrateCharacterDetails(tx, characterDetails);
+                migrateRelationships(tx, characterQuests, characterPathChoices, choiceItems, equipment, inventoryItems, questItems, sceneNpcs);
+                return null;
+            });
+        }
 
         Map<String, Integer> migratedCounts = new LinkedHashMap<>();
         migratedCounts.put("accounts", accounts.size());
@@ -157,35 +164,38 @@ public class Neo4jMigrationService {
                         "COUNT { MATCH (i:Inventory) WHERE NOT (:Character)-[:HAS_INVENTORY]->(i) } AS inventoriesWithoutCharacter, " +
                         "COUNT { MATCH (p:CharacterPath) WHERE NOT (:Character)-[:HAS_PATH]->(p) } AS pathsWithoutCharacter";
 
-        Map<String, Integer> violations = new LinkedHashMap<>();
         try (Session session = neo4jDriver.session()) {
-            Record records = session.run(integrityQuery).single();
-            violations.put("charactersWithoutAccount", records.get("charactersWithoutAccount").asInt());
-            violations.put("charactersWithoutScene", records.get("charactersWithoutScene").asInt());
-            violations.put("charactersWithoutRace", records.get("charactersWithoutRace").asInt());
-            violations.put("scenesWithoutChapter", records.get("scenesWithoutChapter").asInt());
-            violations.put("questsWithoutScene", records.get("questsWithoutScene").asInt());
-            violations.put("inventoriesWithoutCharacter", records.get("inventoriesWithoutCharacter").asInt());
-            violations.put("pathsWithoutCharacter", records.get("pathsWithoutCharacter").asInt());
+            return session.executeRead(tx -> {
+                Record record = tx.run(integrityQuery).single();
+                Map<String, Integer> violations = new LinkedHashMap<>();
+                violations.put("charactersWithoutAccount", record.get("charactersWithoutAccount").asInt());
+                violations.put("charactersWithoutScene", record.get("charactersWithoutScene").asInt());
+                violations.put("charactersWithoutRace", record.get("charactersWithoutRace").asInt());
+                violations.put("scenesWithoutChapter", record.get("scenesWithoutChapter").asInt());
+                violations.put("questsWithoutScene", record.get("questsWithoutScene").asInt());
+                violations.put("inventoriesWithoutCharacter", record.get("inventoriesWithoutCharacter").asInt());
+                violations.put("pathsWithoutCharacter", record.get("pathsWithoutCharacter").asInt());
+                return violations;
+            });
         }
-        return violations;
     }
 
-    private void createConstraints() {
-        run("CREATE CONSTRAINT account_id IF NOT EXISTS FOR (n:Account) REQUIRE n.id IS UNIQUE");
-        run("CREATE CONSTRAINT chapter_id IF NOT EXISTS FOR (n:Chapter) REQUIRE n.id IS UNIQUE");
-        run("CREATE CONSTRAINT scene_id IF NOT EXISTS FOR (n:Scene) REQUIRE n.id IS UNIQUE");
-        run("CREATE CONSTRAINT choice_id IF NOT EXISTS FOR (n:Choice) REQUIRE n.id IS UNIQUE");
-        run("CREATE CONSTRAINT quest_id IF NOT EXISTS FOR (n:Quest) REQUIRE n.id IS UNIQUE");
-        run("CREATE CONSTRAINT item_id IF NOT EXISTS FOR (n:Item) REQUIRE n.id IS UNIQUE");
-        run("CREATE CONSTRAINT npc_id IF NOT EXISTS FOR (n:Npc) REQUIRE n.id IS UNIQUE");
-        run("CREATE CONSTRAINT race_details_id IF NOT EXISTS FOR (n:RaceDetails) REQUIRE n.id IS UNIQUE");
-        run("CREATE CONSTRAINT character_id IF NOT EXISTS FOR (n:Character) REQUIRE n.id IS UNIQUE");
-        run("CREATE CONSTRAINT character_path_id IF NOT EXISTS FOR (n:CharacterPath) REQUIRE n.id IS UNIQUE");
-        run("CREATE CONSTRAINT inventory_id IF NOT EXISTS FOR (n:Inventory) REQUIRE n.id IS UNIQUE");
+    private void createConstraints(Session session) {
+        session.run("CREATE CONSTRAINT account_id IF NOT EXISTS FOR (n:Account) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT chapter_id IF NOT EXISTS FOR (n:Chapter) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT scene_id IF NOT EXISTS FOR (n:Scene) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT choice_id IF NOT EXISTS FOR (n:Choice) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT quest_id IF NOT EXISTS FOR (n:Quest) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT item_id IF NOT EXISTS FOR (n:Item) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT npc_id IF NOT EXISTS FOR (n:Npc) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT race_details_id IF NOT EXISTS FOR (n:RaceDetails) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT character_id IF NOT EXISTS FOR (n:Character) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT character_path_id IF NOT EXISTS FOR (n:CharacterPath) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT inventory_id IF NOT EXISTS FOR (n:Inventory) REQUIRE n.id IS UNIQUE").consume();
     }
 
     private void migrateNodes(
+            TransactionContext tx,
             List<Account> accounts,
             List<Chapter> chapters,
             List<Scene> scenes,
@@ -199,7 +209,7 @@ public class Neo4jMigrationService {
             List<Inventory> inventories
     ) {
         for (Account account : accounts) {
-            run(
+            tx.run(
                     "MERGE (a:Account {id: $id}) " +
                             "SET a.username = $username, a.password = $password, a.characterLimit = $characterLimit, " +
                             "a.email = $email, a.role = $role",
@@ -211,30 +221,30 @@ public class Neo4jMigrationService {
                             "email", account.getEmail(),
                             "role", account.getRole() == null ? null : account.getRole().name()
                     )
-            );
+            ).consume();
         }
 
         for (Chapter chapter : chapters) {
-            run(
+            tx.run(
                     "MERGE (c:Chapter {id: $id}) SET c.name = $name",
                     params("id", chapter.getId(), "name", chapter.getName())
-            );
+            ).consume();
         }
 
         for (Scene scene : scenes) {
-            run(
+            tx.run(
                     "MERGE (s:Scene {id: $id}) SET s.name = $name",
                     params("id", scene.getId(), "name", scene.getName())
-            );
-            run(
+            ).consume();
+            tx.run(
                     "MATCH (c:Chapter {id: $chapterId}), (s:Scene {id: $sceneId}) " +
                             "MERGE (c)-[:HAS_SCENE]->(s)",
                     params("chapterId", scene.getChapter().getId(), "sceneId", scene.getId())
-            );
+            ).consume();
         }
 
         for (Choice choice : choices) {
-            run(
+            tx.run(
                     "MERGE (c:Choice {id: $id}) " +
                             "SET c.description = $description, c.consequence = $consequence, c.targetId = $targetId, " +
                             "c.valueInt = $valueInt, c.storyWeight = $storyWeight, c.requirements = $requirements",
@@ -247,109 +257,109 @@ public class Neo4jMigrationService {
                             "storyWeight", choice.getStoryWeight() == null ? null : choice.getStoryWeight().intValue(),
                             "requirements", choice.getRequirements()
                     )
-            );
-            run(
+            ).consume();
+            tx.run(
                     "MATCH (s:Scene {id: $sceneId}), (c:Choice {id: $choiceId}) " +
                             "MERGE (s)-[:HAS_CHOICE]->(c)",
                     params("sceneId", choice.getScene().getId(), "choiceId", choice.getId())
-            );
+            ).consume();
 
             if (choice.getDestinationScene() != null) {
-                run(
+                tx.run(
                         "MATCH (c:Choice {id: $choiceId}), (s:Scene {id: $destinationSceneId}) " +
                                 "MERGE (c)-[:LEADS_TO]->(s)",
                         params("choiceId", choice.getId(), "destinationSceneId", choice.getDestinationScene().getId())
-                );
+                ).consume();
             }
         }
 
         for (Quest quest : quests) {
-            run(
+            tx.run(
                     "MERGE (q:Quest {id: $id}) SET q.description = $description",
                     params("id", quest.getId(), "description", quest.getDescription())
-            );
-            run(
+            ).consume();
+            tx.run(
                     "MATCH (s:Scene {id: $sceneId}), (q:Quest {id: $questId}) " +
                             "MERGE (s)-[:HAS_QUEST]->(q)",
                     params("sceneId", quest.getScene().getId(), "questId", quest.getId())
-            );
+            ).consume();
         }
 
         for (Item item : items) {
-            run(
+            tx.run(
                     "MERGE (i:Item {id: $id}) SET i.name = $name, i.description = $description, i.type = $type",
                     params("id", item.getId(), "name", item.getName(), "description", item.getDescription(), "type", item.getType())
-            );
+            ).consume();
         }
 
         for (RaceDetails detail : raceDetails) {
-            run("MERGE (r:RaceDetails {id: $id})", params("id", detail.getId()));
+            tx.run("MERGE (r:RaceDetails {id: $id})", params("id", detail.getId())).consume();
         }
 
         for (Npc npc : npcs) {
-            run(
+            tx.run(
                     "MERGE (n:Npc {id: $id}) SET n.name = $name",
                     params("id", npc.getId(), "name", npc.getName())
-            );
-            run(
+            ).consume();
+            tx.run(
                     "MATCH (n:Npc {id: $npcId}), (r:RaceDetails {id: $raceDetailsId}) " +
                             "MERGE (n)-[:HAS_RACE]->(r)",
                     params("npcId", npc.getId(), "raceDetailsId", npc.getRaceDetails().getId())
-            );
+            ).consume();
         }
 
         for (CharacterAvatar character : characters) {
-            run(
+            tx.run(
                     "MERGE (c:Character {id: $id}) SET c.name = $name, c.flag = $flag",
                     params("id", character.getId(), "name", character.getName(), "flag", character.getFlag())
-            );
-            run(
+            ).consume();
+            tx.run(
                     "MATCH (a:Account {id: $accountId}), (c:Character {id: $characterId}) " +
                             "MERGE (a)-[:OWNS_CHARACTER]->(c)",
                     params("accountId", character.getAccount().getId(), "characterId", character.getId())
-            );
-            run(
+            ).consume();
+            tx.run(
                     "MATCH (c:Character {id: $characterId}), (ch:Chapter {id: $chapterId}) " +
                             "MERGE (c)-[:IN_CHAPTER]->(ch)",
                     params("characterId", character.getId(), "chapterId", character.getChapter().getId())
-            );
-            run(
+            ).consume();
+            tx.run(
                     "MATCH (c:Character {id: $characterId}), (s:Scene {id: $sceneId}) " +
                             "MERGE (c)-[:CURRENT_SCENE]->(s)",
                     params("characterId", character.getId(), "sceneId", character.getScene().getId())
-            );
-            run(
+            ).consume();
+            tx.run(
                     "MATCH (c:Character {id: $characterId}), (r:RaceDetails {id: $raceDetailsId}) " +
                             "MERGE (c)-[:HAS_RACE]->(r)",
                     params("characterId", character.getId(), "raceDetailsId", character.getRaceDetails().getId())
-            );
+            ).consume();
         }
 
         for (CharacterPath characterPath : characterPaths) {
-            run(
+            tx.run(
                     "MERGE (p:CharacterPath {id: $id}) SET p.summary = $summary",
                     params("id", characterPath.getId(), "summary", characterPath.getSummary())
-            );
-            run(
+            ).consume();
+            tx.run(
                     "MATCH (c:Character {id: $characterId}), (p:CharacterPath {id: $pathId}) " +
                             "MERGE (c)-[:HAS_PATH]->(p)",
                     params("characterId", characterPath.getCharacter().getId(), "pathId", characterPath.getId())
-            );
+            ).consume();
         }
 
         for (Inventory inventory : inventories) {
-            run("MERGE (i:Inventory {id: $id})", params("id", inventory.getId()));
-            run(
+            tx.run("MERGE (i:Inventory {id: $id})", params("id", inventory.getId())).consume();
+            tx.run(
                     "MATCH (c:Character {id: $characterId}), (i:Inventory {id: $inventoryId}) " +
                             "MERGE (c)-[:HAS_INVENTORY]->(i)",
                     params("characterId", inventory.getCharacter().getId(), "inventoryId", inventory.getId())
-            );
+            ).consume();
         }
     }
 
-    private void migrateCharacterDetails(List<CharacterDetails> characterDetails) {
+    private void migrateCharacterDetails(TransactionContext tx, List<CharacterDetails> characterDetails) {
         for (CharacterDetails details : characterDetails) {
-            run(
+            tx.run(
                     "MATCH (c:Character {id: $characterId}) " +
                             "SET c.intelligence = $intelligence, c.charisma = $charisma, c.fashion = $fashion",
                     params(
@@ -358,11 +368,12 @@ public class Neo4jMigrationService {
                             "charisma", details.getCharisma(),
                             "fashion", details.getFashion()
                     )
-            );
+            ).consume();
         }
     }
 
     private void migrateRelationships(
+            TransactionContext tx,
             List<CharacterHasQuest> characterQuests,
             List<CharacterPathChoice> characterPathChoices,
             List<ChoiceHasItem> choiceItems,
@@ -372,7 +383,7 @@ public class Neo4jMigrationService {
             List<SceneHasNpc> sceneNpcs
     ) {
         for (CharacterHasQuest characterQuest : characterQuests) {
-            run(
+            tx.run(
                     "MATCH (c:Character {id: $characterId}), (q:Quest {id: $questId}) " +
                             "MERGE (c)-[r:HAS_QUEST]->(q) SET r.status = $status",
                     params(
@@ -380,46 +391,46 @@ public class Neo4jMigrationService {
                             "questId", characterQuest.getQuest().getId(),
                             "status", characterQuest.getStatus() == null ? null : characterQuest.getStatus().intValue()
                     )
-            );
+            ).consume();
         }
 
         for (CharacterPathChoice characterPathChoice : characterPathChoices) {
-            run(
+            tx.run(
                     "MATCH (p:CharacterPath {id: $pathId}), (c:Choice {id: $choiceId}) " +
                             "MERGE (p)-[:INCLUDES_CHOICE]->(c)",
                     params(
                             "pathId", characterPathChoice.getCharacterPath().getId(),
                             "choiceId", characterPathChoice.getChoice().getId()
                     )
-            );
+            ).consume();
         }
 
         for (ChoiceHasItem choiceItem : choiceItems) {
-            run(
+            tx.run(
                     "MATCH (c:Choice {id: $choiceId}), (i:Item {id: $itemId}) " +
                             "MERGE (c)-[:AFFECTS_ITEM]->(i)",
                     params("choiceId", choiceItem.getChoice().getId(), "itemId", choiceItem.getItem().getId())
-            );
+            ).consume();
         }
 
         for (QuestHasItem questItem : questItems) {
-            run(
+            tx.run(
                     "MATCH (q:Quest {id: $questId}), (i:Item {id: $itemId}) " +
                             "MERGE (q)-[:INVOLVES_ITEM]->(i)",
                     params("questId", questItem.getQuest().getId(), "itemId", questItem.getItem().getId())
-            );
+            ).consume();
         }
 
         for (SceneHasNpc sceneNpc : sceneNpcs) {
-            run(
+            tx.run(
                     "MATCH (s:Scene {id: $sceneId}), (n:Npc {id: $npcId}) " +
                             "MERGE (s)-[:HAS_NPC]->(n)",
                     params("sceneId", sceneNpc.getScene().getId(), "npcId", sceneNpc.getNpc().getId())
-            );
+            ).consume();
         }
 
         for (InventoryHasItem inventoryItem : inventoryItems) {
-            run(
+            tx.run(
                     "MATCH (i:Inventory {id: $inventoryId}), (item:Item {id: $itemId}) " +
                             "MERGE (i)-[r:CONTAINS]->(item) SET r.amount = $amount",
                     params(
@@ -427,43 +438,31 @@ public class Neo4jMigrationService {
                             "itemId", inventoryItem.getItem().getId(),
                             "amount", inventoryItem.getAmount()
                     )
-            );
+            ).consume();
         }
 
         for (Equipment row : equipment) {
             if (row.getHead() != null) {
-                run(
+                tx.run(
                         "MATCH (c:Character {id: $characterId}), (i:Item {id: $itemId}) " +
                                 "MERGE (c)-[:EQUIPPED_HEAD]->(i)",
                         params("characterId", row.getCharacterId(), "itemId", row.getHead().getId())
-                );
+                ).consume();
             }
             if (row.getChest() != null) {
-                run(
+                tx.run(
                         "MATCH (c:Character {id: $characterId}), (i:Item {id: $itemId}) " +
                                 "MERGE (c)-[:EQUIPPED_CHEST]->(i)",
                         params("characterId", row.getCharacterId(), "itemId", row.getChest().getId())
-                );
+                ).consume();
             }
             if (row.getLegs() != null) {
-                run(
+                tx.run(
                         "MATCH (c:Character {id: $characterId}), (i:Item {id: $itemId}) " +
                                 "MERGE (c)-[:EQUIPPED_LEGS]->(i)",
                         params("characterId", row.getCharacterId(), "itemId", row.getLegs().getId())
-                );
+                ).consume();
             }
-        }
-    }
-
-    private void run(String cypher) {
-        try (Session session = neo4jDriver.session()) {
-            session.run(cypher).consume();
-        }
-    }
-
-    private void run(String cypher, Map<String, Object> params) {
-        try (Session session = neo4jDriver.session()) {
-            session.run(cypher, params).consume();
         }
     }
 

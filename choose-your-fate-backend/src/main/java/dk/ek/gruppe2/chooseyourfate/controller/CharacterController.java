@@ -1,0 +1,57 @@
+package dk.ek.gruppe2.chooseyourfate.controller;
+
+import dk.ek.gruppe2.chooseyourfate.dto.CharacterResponseDTO;
+import dk.ek.gruppe2.chooseyourfate.dto.CreateCharacterRequestDTO;
+import dk.ek.gruppe2.chooseyourfate.service.CharacterService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/characters")
+public class CharacterController {
+
+    private static final String DATA_SOURCE_HEADER = "X-Data-Source";
+
+    private final CharacterService characterService;
+
+    public CharacterController(CharacterService characterService) {
+        this.characterService = characterService;
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<CharacterResponseDTO> getAllCharacters(
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource
+    ) {
+        return characterService.getAllCharacters(dataSource);
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#id, authentication)")
+    public CharacterResponseDTO getCharacterById(
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource,
+            @PathVariable Integer id
+    ) {
+        return characterService.getCharacterById(dataSource, id);
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or @accountAuthorizationService.canModifyAccount(#request.accountId, authentication)")
+    public CharacterResponseDTO createCharacter(
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource,
+            @RequestBody CreateCharacterRequestDTO request
+    ) {
+        return characterService.createCharacter(dataSource, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#id, authentication)")
+    public void deleteCharacter(
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource,
+            @PathVariable Integer id
+    ) {
+        characterService.deleteCharacter(dataSource, id);
+    }
+}

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/accounts")
+@RequestMapping("/choose-your-fate/accounts")
 public class AccountController {
 
     private static final String DATA_SOURCE_HEADER = "X-Data-Source";
