@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class QuestRequestDTO {
 
-    private Integer scene_id;
+    private Integer sceneId;
     private String description;
 
     public Quest getQuestEntity(Scene scene) {
