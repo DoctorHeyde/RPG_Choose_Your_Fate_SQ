@@ -12,11 +12,11 @@ import lombok.Setter;
 @NoArgsConstructor
 public class QuestResponseDTO {
 
-    private Integer scene_id;
+    private Integer sceneId;
     private String description;
 
     public QuestResponseDTO(Quest quest) {
-        this.scene_id = quest.getScene().getId();
+        this.sceneId = quest.getScene().getId();
         this.description = quest.getDescription();
     }
 
