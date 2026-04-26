@@ -20,11 +20,10 @@ public class AuthenticationController {
 
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
-
     private final AccountService accountService;
 
     public AuthenticationController(AuthenticationManager authManager,
-                          JwtUtil jwtUtil,                          
+                        JwtUtil jwtUtil,                          
                         AccountService accountService) {
         this.authManager = authManager;
         this.jwtUtil = jwtUtil;
