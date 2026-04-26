@@ -19,7 +19,6 @@ public class AuthenticationController {
 
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
-
     private final AccountService accountService;
 
     public AuthenticationController(AuthenticationManager authManager,
@@ -33,13 +32,11 @@ public class AuthenticationController {
     @PostMapping("/register")
     public String register(@RequestBody CreateAccountRequestDTO acc) {
         accountService.createAccount(acc);
-
         return "Registered";
     }
 
     @PostMapping("/login")
     public String login(@RequestBody LoginDTO request) {
-
         Authentication auth = authManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 request.username,

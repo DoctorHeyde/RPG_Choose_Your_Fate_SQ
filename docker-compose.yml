@@ -1,4 +1,4 @@
-# mysql server seeded with databases from dump files in the folder ./mysql
+# mysql server seeded with databases from dump files in the folder ./rpg_mysql
 # The seeding only happens on the first start when the volume is created.
 # If you need to reset the seeding, you need to "run docker compose down -v" to delete the volume
 services:
@@ -10,7 +10,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: "123456"
     volumes:
-      - rpg_mysql:/var/rpg_mysql
+      - rpg_mysql:/var/lib/mysql
       - ./rpg_mysql:/docker-entrypoint-initdb.d
     hostname: rpg_mysql
 volumes:
