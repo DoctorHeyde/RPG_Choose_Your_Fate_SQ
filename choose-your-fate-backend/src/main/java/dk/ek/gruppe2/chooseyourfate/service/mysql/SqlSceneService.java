@@ -67,6 +67,6 @@ public class SqlSceneService implements SceneDataAccess {
 
     private Chapter getChapterById(Integer chapterId){
         return chapterRepository.findById(chapterId)
-            .orElseThrow(() -> new ResourceNotFoundException("Scene not found with id: " + chapterId));
+            .orElseThrow(() -> new ResourceNotFoundException("Chapter not found with id: " + chapterId));
     }
 }
