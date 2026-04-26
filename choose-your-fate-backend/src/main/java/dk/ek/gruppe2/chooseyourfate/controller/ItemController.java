@@ -29,7 +29,7 @@ public class ItemController {
     }
 
     @PostMapping
-    public ResponseEntity<Boolean> createItem(@RequestBody ItemRequestDTO requestDTO) {
+    public ResponseEntity<ItemResponseDTO> createItem(@RequestBody ItemRequestDTO requestDTO) {
         return itemService.createItem(requestDTO);
     }
 

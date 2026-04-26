@@ -32,8 +32,8 @@ public class ItemService {
         return response;
     }
 
-    public ResponseEntity<ItemResponseDTO> CreateItem(ItemRequestDTO requestDTO) {
-        Item item = requestDTO.getItemEntity(requestDTO);
+    public ResponseEntity<ItemResponseDTO> createItem(ItemRequestDTO requestDTO) {
+        Item item = requestDTO.getItemEntity();
         Item savedItem = itemRepository.save(item);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ItemResponseDTO(savedItem));
     }
@@ -47,7 +47,7 @@ public class ItemService {
         return new ItemResponseDTO(item);
     }
 
-    public void DeleteItem(Integer itemId) {
+    public void deleteItem(Integer itemId) {
         if (!itemRepository.existsById(itemId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }

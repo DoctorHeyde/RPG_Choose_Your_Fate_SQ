@@ -29,7 +29,7 @@ public class QuestController {
     }
 
     @PostMapping
-    public ResponseEntity<Boolean> createQuest(@RequestBody QuestRequestDTO questRequestDTO) {
+    public ResponseEntity<QuestResponseDTO> createQuest(@RequestBody QuestRequestDTO questRequestDTO) {
         return questService.createQuest(questRequestDTO);
     }
 

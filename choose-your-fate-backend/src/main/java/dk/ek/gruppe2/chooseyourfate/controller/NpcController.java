@@ -29,7 +29,7 @@ public class NpcController {
     }
 
     @PostMapping
-    public ResponseEntity<Boolean> createNpc(@RequestBody NpcRequestDTO requestDTO) {
+    public ResponseEntity<NpcResponseDTO> createNpc(@RequestBody NpcRequestDTO requestDTO) {
         return npcService.createNpc(requestDTO);
     }
 

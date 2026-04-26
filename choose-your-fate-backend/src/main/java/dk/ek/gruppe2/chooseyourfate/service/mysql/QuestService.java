@@ -37,7 +37,7 @@ public class QuestService {
     }
 
     public ResponseEntity<QuestResponseDTO> createQuest(QuestRequestDTO questRequestDTO) {
-        Scene scene = sceneRepository.findById(questRequestDTO.getScene_id()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Scene scene = sceneRepository.findById(questRequestDTO.getSceneId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
         Quest quest = questRequestDTO.getQuestEntity(scene);
         Quest savedQuest = questRepository.save(quest);
         return ResponseEntity.status(HttpStatus.CREATED).body(new QuestResponseDTO(savedQuest));
@@ -45,7 +45,7 @@ public class QuestService {
 
     public QuestResponseDTO updateQuest(Integer id, QuestRequestDTO questRequestDTO) {
         Quest quest = questRepository.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
-        Scene scene = sceneRepository.findById(questRequestDTO.getScene_id()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Scene scene = sceneRepository.findById(questRequestDTO.getSceneId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
         quest.setDescription(questRequestDTO.getDescription());
         quest.setScene(scene);
         questRepository.save(quest);
