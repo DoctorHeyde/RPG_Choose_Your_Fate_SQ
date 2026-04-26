@@ -39,8 +39,8 @@ public class SqlChoiceService implements ChoiceDataAccess  {
 
     @Override
     public ChoiceResponseDTO createChoice(CreateChoiceRequestDTO request) {
-        Choice Choice = request.toEntity(getSceneById(request.getSceneId()), getSceneById(request.getDestinationSceneId()));
-        return new ChoiceResponseDTO(choiceRepository.save(Choice));
+        Choice choice = request.toEntity(getSceneById(request.getSceneId()), getSceneById(request.getDestinationSceneId()));
+        return new ChoiceResponseDTO(choiceRepository.save(choice));
     }
 
     @Override
