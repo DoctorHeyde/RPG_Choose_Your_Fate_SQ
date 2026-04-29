@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Account from "../pages/Account";
+import Game from "../pages/Game";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 function AppRouter() {
@@ -16,6 +17,14 @@ function AppRouter() {
           element={
             <ProtectedRoute>
               <Account />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/game"
+          element={
+            <ProtectedRoute>
+              <Game />
             </ProtectedRoute>
           }
         />
