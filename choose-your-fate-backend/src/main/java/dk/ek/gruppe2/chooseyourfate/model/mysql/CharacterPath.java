@@ -21,6 +21,10 @@ public class CharacterPath {
     @Column(columnDefinition = "LONGTEXT")
     private String summary;
 
+    @Column(columnDefinition = "MEDIUMBLOB")
+    @Lob
+    private byte[] audioBlob;
+
     public CharacterPath() {}
 
     public Integer getId() { return id; }
@@ -31,4 +35,7 @@ public class CharacterPath {
 
     public String getSummary() { return summary; }
     public void setSummary(String summary) { this.summary = summary; }
+
+    public byte[] getAudioBlob() { return audioBlob; }
+    public void setAudioBlob(byte[] audioBlob) { this.audioBlob = audioBlob; }
 }

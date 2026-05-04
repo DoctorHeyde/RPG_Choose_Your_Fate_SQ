@@ -1,21 +1,25 @@
 package dk.ek.gruppe2.chooseyourfate.service;
 
+import dk.ek.gruppe2.chooseyourfate.repository.mysql.CharacterPathRepository;
 import org.springframework.ai.audio.tts.TextToSpeechPrompt;
 import org.springframework.ai.audio.tts.TextToSpeechResponse;
 import org.springframework.ai.elevenlabs.ElevenLabsTextToSpeechModel;
 import org.springframework.ai.elevenlabs.ElevenLabsTextToSpeechOptions;
 import org.springframework.ai.elevenlabs.api.ElevenLabsApi;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Service
 public class TTSService {
 
-    public byte[] textToSpeech(String text) throws IOException {
+    public final CharacterPathRepository characterPathRepository;
+
+    public TTSService(CharacterPathRepository characterPathRepository) {
+        this.characterPathRepository = characterPathRepository;
+    }
+
+    public byte[] createAudioBlob(String text) throws IOException {
         ElevenLabsApi elevenLabsApi = ElevenLabsApi.builder()
                 .apiKey(System.getenv("ELEVEN_LABS_API_KEY"))
                 .build();
@@ -33,7 +37,11 @@ public class TTSService {
         TextToSpeechPrompt speechPrompt = new TextToSpeechPrompt(text);
         TextToSpeechResponse response = elevenLabsTextToSpeechModel.call(speechPrompt);
 
-        return response.getResult().getOutput();
-
+        byte[] audioBlob = response.getResult().getOutput();
+        return audioBlob;
     }
+
+
+
+
 }
