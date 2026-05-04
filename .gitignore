@@ -31,6 +31,10 @@ build/
 ### VS Code ###
 .vscode/
 
+# local environment secrets
+.env
+.env.example
+
 #obsidian notes
 Mandatory-one-database/.obsidian/
 
