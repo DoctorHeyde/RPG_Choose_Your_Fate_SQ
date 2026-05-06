@@ -30,13 +30,13 @@ export async function register(username: string, email: string, password: string
   return res.json();
 }
 
-export async function apiGet(apiPath: String) {
-  const { token } = useAuth();
+export async function apiGet(apiPath: String, options?: { token: string | null }) {
   const res = await fetch(`${API_URL}choose-your-fate/${apiPath}`, {
     method: "GET",
     headers: { 
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${options ? options.token : null}`,
+      "X-Data-Source": "SQL"
      },
   });
 

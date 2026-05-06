@@ -93,6 +93,17 @@ public class SqlCharacterService implements CharacterDataAccess {
         storedProcedure.execute();
     }
 
+    @Override
+    public List<CharacterResponseDTO> getCharactersByAccountId(Integer id) {
+        return getCharacterentitesByAccountId(id).stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    private List<CharacterAvatar> getCharacterentitesByAccountId(Integer id) {
+        return characterAvatarRepository.findByAccount_Id(id);
+    }
+
     private CharacterAvatar getCharacterEntity(Integer id) {
         return characterAvatarRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Character not found with id: " + id));

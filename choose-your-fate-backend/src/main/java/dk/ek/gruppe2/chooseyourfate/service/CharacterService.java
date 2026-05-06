@@ -15,42 +15,42 @@ import java.util.List;
 @Service
 public class CharacterService {
 
-    private final DataSourceResolver dataSourceResolver;
     private final SqlCharacterService sqlCharacterService;
     private final Neo4jCharacterService neo4jCharacterService;
     private final MongoCharacterService mongoCharacterService;
 
     public CharacterService(
-            DataSourceResolver dataSourceResolver,
             SqlCharacterService sqlCharacterService,
             Neo4jCharacterService neo4jCharacterService,
             MongoCharacterService mongoCharacterService
     ) {
-        this.dataSourceResolver = dataSourceResolver;
         this.sqlCharacterService = sqlCharacterService;
         this.neo4jCharacterService = neo4jCharacterService;
         this.mongoCharacterService = mongoCharacterService;
     }
 
-    public List<CharacterResponseDTO> getAllCharacters(String sourceHeader) {
+    public List<CharacterResponseDTO> getAllCharacters(DataSourceType sourceHeader) {
         return resolveDataAccess(sourceHeader).getAllCharacters();
     }
 
-    public CharacterResponseDTO getCharacterById(String sourceHeader, Integer id) {
+    public CharacterResponseDTO getCharacterById(DataSourceType sourceHeader, Integer id) {
         return resolveDataAccess(sourceHeader).getCharacterById(id);
     }
 
-    public CharacterResponseDTO createCharacter(String sourceHeader, CreateCharacterRequestDTO request) {
+    public CharacterResponseDTO createCharacter(DataSourceType sourceHeader, CreateCharacterRequestDTO request) {
         return resolveDataAccess(sourceHeader).createCharacter(request);
     }
 
-    public void deleteCharacter(String sourceHeader, Integer id) {
+    public void deleteCharacter(DataSourceType sourceHeader, Integer id) {
         resolveDataAccess(sourceHeader).deleteCharacter(id);
     }
 
-    private CharacterDataAccess resolveDataAccess(String sourceHeader) {
-        DataSourceType dataSourceType = dataSourceResolver.resolve(sourceHeader);
-        return switch (dataSourceType) {
+    public List<CharacterResponseDTO> getCharactersByAccountId(DataSourceType sourceHeader, Integer id) {
+        return resolveDataAccess(sourceHeader).getCharactersByAccountId(id);
+    }
+
+    private CharacterDataAccess resolveDataAccess(DataSourceType sourceHeader) {
+        return switch (sourceHeader) {
             case SQL -> sqlCharacterService;
             case NEO4J -> neo4jCharacterService;
             case MONGODB -> mongoCharacterService;

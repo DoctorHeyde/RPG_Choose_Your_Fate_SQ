@@ -22,6 +22,7 @@ export type Character = {
   sceneId: number;
   raceDetailsId: number;
   name: string;
+  flag: {};
 };
 
 export type Props = {

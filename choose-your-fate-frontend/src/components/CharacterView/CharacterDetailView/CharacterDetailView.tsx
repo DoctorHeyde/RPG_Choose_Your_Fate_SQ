@@ -6,11 +6,13 @@ import InventoryView from "./InventoryView/InventoryView";
 import EquipmentView from "./EquipmentView/EquipmentView";
 
 import "./CharacterDetailView.css";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function CharacterDetailView({ character }: Props) {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { token } = useAuth();
 
   useEffect(() => {
     async function fetchData() {
@@ -18,8 +20,8 @@ export default function CharacterDetailView({ character }: Props) {
         setLoading(true);
 
         const [inventoryData, equipmentData] = await Promise.all([
-          apiGet(`character/${character.id}/inventory`),
-          apiGet(`character/${character.id}/equipment`)
+          apiGet(`character/${character.id}/inventory`, {token: token}),
+          apiGet(`character/${character.id}/equipment`, {token: token})
         ]);
 
         setInventory(inventoryData);

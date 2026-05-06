@@ -1,50 +1,22 @@
 import { useEffect, useState } from "react";
-//import { apiGet } from "../../../api/authApi";
+import { apiGet } from "../../../api/authApi";
 import type { Character, CharacterListProps } from "../../../types/general";
 import CharacterWindow from "./CharacterWindow/CharacterWindow";
 import NewCharacterWindow from "./NewCharacterWindow/NewCharacterWindow";
 
 import "./CharacterList.css"
+import { useAuth } from "../../../context/AuthContext";
 
 export default function CharacterList({ onSelect }: CharacterListProps) {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
+  const { token } = useAuth();
 
   useEffect(() => {
     async function fetchCharacters() {
       try {
-        // const data: Character[] = await apiGet("characters");
-        const data: Character[] = [
-            {
-                id: 1,
-                accountId: 0,
-                chapterId: 0,
-                raceDetailsId: 0,
-                sceneId: 0,
-                name: "Dave the Bob"
-            },{
-                id: 2,
-                accountId: 0,
-                chapterId: 0,
-                raceDetailsId: 0,
-                sceneId: 0,
-                name: "Johnny the Bob"
-            },{
-                id: 3,
-                accountId: 0,
-                chapterId: 0,
-                raceDetailsId: 0,
-                sceneId: 0,
-                name: "Tommy the Bob"
-            },{
-                id: 4,
-                accountId: 0,
-                chapterId: 0,
-                raceDetailsId: 0,
-                sceneId: 0,
-                name: "Gary the Bob"
-            }
-        ]
+        const data: Character[] = await apiGet(`characters/all`, {token: token});
+        
 
         setCharacters(data);
       } catch (err) {

@@ -21,9 +21,12 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(UserDetails user) {
+    public String generateToken(UserDetails userDetails) {
+        CustomUserDetails user = (CustomUserDetails) userDetails;
+
         return Jwts.builder()
                 .setSubject(user.getUsername())
+                .claim("userId", user.getId())
                 .claim("role", user.getAuthorities().iterator().next().getAuthority())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000))
