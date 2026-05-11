@@ -195,6 +195,13 @@ public class Neo4jMigrationService {
         session.run("CREATE CONSTRAINT character_id IF NOT EXISTS FOR (n:Character) REQUIRE n.id IS UNIQUE").consume();
         session.run("CREATE CONSTRAINT character_path_id IF NOT EXISTS FOR (n:CharacterPath) REQUIRE n.id IS UNIQUE").consume();
         session.run("CREATE CONSTRAINT inventory_id IF NOT EXISTS FOR (n:Inventory) REQUIRE n.id IS UNIQUE").consume();
+
+        session.run("""
+                MATCH (a:Account)
+                WITH coalesce(max(a.id), 0) AS maxAccountId
+                MERGE (counter:Counter {name: 'account'})
+                SET counter.value = maxAccountId
+                """).consume();
     }
 
     private void migrateNodes(

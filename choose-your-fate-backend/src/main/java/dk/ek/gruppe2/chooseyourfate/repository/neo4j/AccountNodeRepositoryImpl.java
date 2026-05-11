@@ -104,14 +104,8 @@ public class AccountNodeRepositoryImpl implements AccountNodeRepository {
     @Override
     public Optional<AccountData> createAccount(CreateAccountData toCreate) {
         return neo4jClient.query("""
-                        OPTIONAL MATCH (existing:Account)
-                        WITH coalesce(max(existing.id), 0) AS maxExistingId
                         MERGE (counter:Counter {name: 'account'})
-                        ON CREATE SET counter.value = maxExistingId
-                        SET counter.value = CASE
-                            WHEN counter.value < maxExistingId THEN maxExistingId
-                            ELSE counter.value
-                        END
+                        ON CREATE SET counter.value = 0
                         SET counter.value = counter.value + 1
                         CREATE (a:Account {
                             id: counter.value,
