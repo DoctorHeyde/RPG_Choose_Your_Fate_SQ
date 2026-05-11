@@ -48,14 +48,11 @@ public class Neo4jAccountService implements AccountDataAccess {
         ensureUniqueUsername(request.getUsername(), null);
         ensureUniqueEmail(request.getEmail(), null);
 
-        Integer nextId = accountRepository.findNextId();
-
         String encodedPassword = encoder.encode(request.getPassword());
         String role = request.toEntity().getRole().name();
 
         try {
             return accountRepository.createAccount(new CreateAccountData(
-                            nextId,
                             request.getUsername(),
                             request.getEmail(),
                             3,
@@ -142,11 +139,11 @@ public class Neo4jAccountService implements AccountDataAccess {
 
     private RuntimeException translateDuplicateConstraint(RuntimeException ex) {
         if (isUniqueConstraintViolation(ex, "username")) {
-            return new DuplicateResourceException("Username already exists");
+            return new DuplicateResourceException("Username already exists", ex);
         }
 
         if (isUniqueConstraintViolation(ex, "email")) {
-            return new DuplicateResourceException("Email already exists");
+            return new DuplicateResourceException("Email already exists", ex);
         }
 
         return ex;

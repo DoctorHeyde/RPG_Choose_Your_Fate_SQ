@@ -15,8 +15,6 @@ public interface AccountNodeRepository {
 
     Optional<Integer> findAccountIdByEmail(String email);
 
-    Integer findNextId();
-
     Optional<AccountData> createAccount(CreateAccountData toCreate);
 
     Optional<AccountData> updateAccount(UpdateAccountData toUpdate);
@@ -32,7 +30,6 @@ public interface AccountNodeRepository {
     }
 
     record CreateAccountData(
-            Integer id,
             String username,
             String email,
             Integer characterLimit,

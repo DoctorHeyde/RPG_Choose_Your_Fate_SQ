@@ -1,6 +1,5 @@
 package dk.ek.gruppe2.chooseyourfate.repository.neo4j;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Repository;
 
@@ -14,37 +13,6 @@ public class AccountNodeRepositoryImpl implements AccountNodeRepository {
 
     public AccountNodeRepositoryImpl(Neo4jClient neo4jClient) {
         this.neo4jClient = neo4jClient;
-    }
-
-    @PostConstruct
-    void ensureConstraints() {
-        neo4jClient.query("""
-                        CREATE CONSTRAINT counter_name_unique IF NOT EXISTS
-                        FOR (c:Counter)
-                        REQUIRE c.name IS UNIQUE
-                        """)
-                .run();
-
-        neo4jClient.query("""
-                        CREATE CONSTRAINT account_id IF NOT EXISTS
-                        FOR (a:Account)
-                        REQUIRE a.id IS UNIQUE
-                        """)
-                .run();
-
-        neo4jClient.query("""
-                        CREATE CONSTRAINT account_username_unique IF NOT EXISTS
-                        FOR (a:Account)
-                        REQUIRE a.username IS UNIQUE
-                        """)
-                .run();
-
-        neo4jClient.query("""
-                        CREATE CONSTRAINT account_email_unique IF NOT EXISTS
-                        FOR (a:Account)
-                        REQUIRE a.email IS UNIQUE
-                        """)
-                .run();
     }
 
     @Override
@@ -134,10 +102,10 @@ public class AccountNodeRepositoryImpl implements AccountNodeRepository {
     }
 
     @Override
-    public Integer findNextId() {
+    public Optional<AccountData> createAccount(CreateAccountData toCreate) {
         return neo4jClient.query("""
-                        OPTIONAL MATCH (a:Account)
-                        WITH coalesce(max(a.id), 0) AS maxExistingId
+                        OPTIONAL MATCH (existing:Account)
+                        WITH coalesce(max(existing.id), 0) AS maxExistingId
                         MERGE (counter:Counter {name: 'account'})
                         ON CREATE SET counter.value = maxExistingId
                         SET counter.value = CASE
@@ -145,19 +113,8 @@ public class AccountNodeRepositoryImpl implements AccountNodeRepository {
                             ELSE counter.value
                         END
                         SET counter.value = counter.value + 1
-                        RETURN counter.value AS nextId
-                        """)
-                .fetchAs(Integer.class)
-                .mappedBy((typeSystem, nextIdRecord) -> nextIdRecord.get("nextId").asInt())
-                .one()
-                .orElse(1);
-    }
-
-    @Override
-    public Optional<AccountData> createAccount(CreateAccountData toCreate) {
-        return neo4jClient.query("""
                         CREATE (a:Account {
-                            id: $id,
+                            id: counter.value,
                             username: $username,
                             email: $email,
                             characterLimit: $characterLimit,
@@ -166,7 +123,6 @@ public class AccountNodeRepositoryImpl implements AccountNodeRepository {
                         })
                         RETURN a.id AS id, a.username AS username, a.characterLimit AS characterLimit, a.email AS email
                         """)
-                .bind(toCreate.id()).to("id")
                 .bind(toCreate.username()).to("username")
                 .bind(toCreate.email()).to("email")
                 .bind(toCreate.characterLimit()).to("characterLimit")

@@ -181,7 +181,10 @@ public class Neo4jMigrationService {
     }
 
     private void createConstraints(Session session) {
+        session.run("CREATE CONSTRAINT counter_name_unique IF NOT EXISTS FOR (c:Counter) REQUIRE c.name IS UNIQUE").consume();
         session.run("CREATE CONSTRAINT account_id IF NOT EXISTS FOR (n:Account) REQUIRE n.id IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT account_username_unique IF NOT EXISTS FOR (n:Account) REQUIRE n.username IS UNIQUE").consume();
+        session.run("CREATE CONSTRAINT account_email_unique IF NOT EXISTS FOR (n:Account) REQUIRE n.email IS UNIQUE").consume();
         session.run("CREATE CONSTRAINT chapter_id IF NOT EXISTS FOR (n:Chapter) REQUIRE n.id IS UNIQUE").consume();
         session.run("CREATE CONSTRAINT scene_id IF NOT EXISTS FOR (n:Scene) REQUIRE n.id IS UNIQUE").consume();
         session.run("CREATE CONSTRAINT choice_id IF NOT EXISTS FOR (n:Choice) REQUIRE n.id IS UNIQUE").consume();
