@@ -377,7 +377,9 @@ DROP VIEW IF EXISTS `defaultdb`.`v_character`;
 USE `defaultdb`;
 CREATE  OR REPLACE VIEW `v_character` AS (
     SELECT avatar.name, deets.intelligence, deets.charisma, deets.fashion, avatar.flag
-    FROM character_details deets, character_avatar avatar
+    FROM character_details deets
+    JOIN character_avatar avatar
+      ON deets.character_id = avatar.id
         );
 
 SET SQL_MODE=@OLD_SQL_MODE;
