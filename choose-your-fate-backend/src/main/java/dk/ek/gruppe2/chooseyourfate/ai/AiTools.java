@@ -103,6 +103,4 @@ public class AiTools {
         return "Summary saved successfully for character " + characterId;
     }
 
-    
-
 }
