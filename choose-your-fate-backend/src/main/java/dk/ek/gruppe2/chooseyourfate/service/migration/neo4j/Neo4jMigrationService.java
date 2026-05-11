@@ -115,6 +115,7 @@ public class Neo4jMigrationService {
                     tx.run("MATCH (n) DETACH DELETE n").consume();
                 }
                 migrateNodes(tx, accounts, chapters, scenes, choices, quests, items, npcs, raceDetails, characters, characterPaths, inventories);
+                syncAccountCounter(tx);
                 migrateCharacterDetails(tx, characterDetails);
                 migrateRelationships(tx, characterQuests, characterPathChoices, choiceItems, equipment, inventoryItems, questItems, sceneNpcs);
                 return null;
@@ -195,8 +196,10 @@ public class Neo4jMigrationService {
         session.run("CREATE CONSTRAINT character_id IF NOT EXISTS FOR (n:Character) REQUIRE n.id IS UNIQUE").consume();
         session.run("CREATE CONSTRAINT character_path_id IF NOT EXISTS FOR (n:CharacterPath) REQUIRE n.id IS UNIQUE").consume();
         session.run("CREATE CONSTRAINT inventory_id IF NOT EXISTS FOR (n:Inventory) REQUIRE n.id IS UNIQUE").consume();
+    }
 
-        session.run("""
+    private void syncAccountCounter(TransactionContext tx) {
+        tx.run("""
                 MATCH (a:Account)
                 WITH coalesce(max(a.id), 0) AS maxAccountId
                 MERGE (counter:Counter {name: 'account'})
