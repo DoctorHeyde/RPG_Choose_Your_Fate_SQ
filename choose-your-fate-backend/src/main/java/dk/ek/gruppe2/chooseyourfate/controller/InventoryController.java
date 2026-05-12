@@ -1,22 +1,23 @@
 package dk.ek.gruppe2.chooseyourfate.controller;
 
+import dk.ek.gruppe2.chooseyourfate.dto.EquipmentResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.InventoryResponseDTO;
-import dk.ek.gruppe2.chooseyourfate.service.mysql.InventoryService;
+import dk.ek.gruppe2.chooseyourfate.service.mysql.SqlInventoryService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/choose-your-fate/inventories")
 public class InventoryController {
 
-    InventoryService inventoryService;
+    SqlInventoryService inventoryService;
 
-    public InventoryController(InventoryService inventoryService) {
+    public InventoryController(SqlInventoryService inventoryService) {
         this.inventoryService = inventoryService;
     }
 
-    @GetMapping("/{inventoryId}")
-    public InventoryResponseDTO getInventoryData(@PathVariable Integer inventoryId) {
-        return inventoryService.getInventoryData(inventoryId);
+    @GetMapping("/{characterId}")
+    public InventoryResponseDTO getInventoryByCharacterId(@PathVariable Integer characterId) {
+        return inventoryService.getInventoryByCharacterId(characterId);
     }
 
     @PostMapping("/{inventoryId}/items/{itemId}")
@@ -28,4 +29,5 @@ public class InventoryController {
     public void useItem(@PathVariable Integer inventoryId, @PathVariable Integer itemId) {
         inventoryService.useItem(inventoryId, itemId);
     }
+
 }
