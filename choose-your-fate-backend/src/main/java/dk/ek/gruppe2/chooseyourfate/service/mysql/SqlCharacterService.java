@@ -59,11 +59,21 @@ public class SqlCharacterService implements CharacterDataAccess<Integer> {
     @Override
     public CharacterResponseDTO createCharacter(CreateCharacterRequestDTO request) {
         if (request.getChapterId() == null || request.getSceneId() == null) {
-            RaceDetails raaceDetails = raceDetailsRepository.findById(request.getRaceDetailsId())
-            .orElseThrow(() -> new ResourceNotFoundException("Character not found with id: " +request.getRaceDetailsId()));
+            RaceDetails raceDetails = raceDetailsRepository.findById(request.getRaceDetailsId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Race details not found with id: " + request.getRaceDetailsId()));
 
-            request.setChapterId(raaceDetails.getStartingChapter().getId());
-            request.setSceneId(raaceDetails.getStartingChapter().getStartingScene().getId());
+            Chapter startingChapter = raceDetails.getStartingChapter();
+            if (startingChapter == null) {
+                throw new ResourceNotFoundException("Starting chapter not configured for race details with id: " + request.getRaceDetailsId());
+            }
+
+            Scene startingScene = startingChapter.getStartingScene();
+            if (startingScene == null) {
+                throw new ResourceNotFoundException("Starting scene not configured for race details with id: " + request.getRaceDetailsId());
+            }
+
+            request.setChapterId(startingChapter.getId());
+            request.setSceneId(startingScene.getId());
         }
 
         validateCreateRequest(request);
