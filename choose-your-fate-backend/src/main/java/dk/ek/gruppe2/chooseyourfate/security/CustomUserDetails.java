@@ -8,11 +8,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.model.mongodb.AccountDocumentMongo;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Account;
-import dk.ek.gruppe2.chooseyourfate.model.neo4j.AccountNode;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public class CustomUserDetails implements UserDetails {
 
@@ -27,6 +25,22 @@ public class CustomUserDetails implements UserDetails {
         this.accountMongo = accountMongo;
         // this.accountNeo4J = accountNeo4J;
     }
+
+    public boolean mongoIsNull(){
+        if (accountMongo == null) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // public boolean neoIsNull(){
+    //     if (accountNeo4J == null) {
+    //         return true;
+    //     }
+
+    //     return false;
+    // }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -65,6 +79,7 @@ public class CustomUserDetails implements UserDetails {
     }
 
     private Collection<? extends GrantedAuthority> getAuthoritiesMONGO() {
+
         if (accountMongo.getRole() == null) {
             throw new IllegalStateException("Account role is null for user: " + accountMongo.getUsername());
         }
