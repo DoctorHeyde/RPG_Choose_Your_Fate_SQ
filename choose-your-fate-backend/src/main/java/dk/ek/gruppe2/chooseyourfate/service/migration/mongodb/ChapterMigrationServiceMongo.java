@@ -55,10 +55,14 @@ public class ChapterMigrationServiceMongo {
             String mongoChapterId = idMappingService.get(CollectionNames.CHAPTERS, entity.getId());
             ChapterDocumentMongo doc = mongoRepo.findById(mongoChapterId).orElseThrow();
 
-            doc.setStartingSceneId(idMappingService.get(
-                                    CollectionNames.SCENES,
-                                    entity.getStartingScene().getId()
-                            ));
+            if (entity.getStartingScene() != null) {
+                doc.setStartingSceneId(idMappingService.get(
+                        CollectionNames.SCENES,
+                        entity.getStartingScene().getId()
+                ));
+            } else {
+                doc.setStartingSceneId(null);
+            }
 
             mongoRepo.save(doc);
         }
