@@ -40,8 +40,6 @@ public class SecurityConfig {
                 .requestMatchers("/choose-your-fate/characters/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/choose-your-fate/inventories/**").authenticated()
                 .requestMatchers("/choose-your-fate/tts/test").permitAll()
-                .requestMatchers("/migration/**").permitAll()
-                .requestMatchers("/api/migrations/neo4j/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

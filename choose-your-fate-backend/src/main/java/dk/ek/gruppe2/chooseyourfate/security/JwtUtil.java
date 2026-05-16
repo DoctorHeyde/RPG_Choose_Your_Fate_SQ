@@ -28,8 +28,6 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("sqlId", user.getId(DataSourceType.SQL))
-                .claim("MongoId", user.getId(DataSourceType.MONGODB))
-                .claim("NeoId", user.getId(DataSourceType.NEO4J))
                 .claim("role", user.getAuthorities().iterator().next().getAuthority())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000))

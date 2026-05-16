@@ -68,11 +68,7 @@ public class CharacterController {
     ) {
         Map<String, Object> extraInfo =  (Map<String, Object>) auth.getDetails(); 
 
-        Object accountId = switch (dataSource) {
-            case SQL -> extraInfo.get("sqlId");
-            case MONGODB -> extraInfo.get("MongoId");
-            case NEO4J -> extraInfo.get("NeoId");
-        };
+        Object accountId = extraInfo.get("sqlId");
 
         return characterService.getCharactersByAccountId(dataSource, accountId.toString());
     }
