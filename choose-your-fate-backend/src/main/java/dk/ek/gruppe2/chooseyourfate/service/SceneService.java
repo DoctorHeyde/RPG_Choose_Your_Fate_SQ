@@ -35,6 +35,11 @@ public class SceneService {
         return resolveDataService(source).getSceneById(id);
     }
 
+    // Calls the SQL-only lookahead implementation directly for easy endpoint testing.
+    public SceneResponseDTO getSqlSceneLookAheadById(Integer id) {
+        return sqlSceneService.getSceneById(id);
+    }
+
     public SceneResponseDTO createScene(DataSourceType source, CreateSceneRequestDTO request) {
         return resolveDataService(source).createScene(request);
     }

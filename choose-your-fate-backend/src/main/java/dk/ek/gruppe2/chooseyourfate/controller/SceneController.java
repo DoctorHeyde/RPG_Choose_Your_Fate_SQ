@@ -46,6 +46,12 @@ public class SceneController {
         return sceneService.getSceneById(dataSource, id);
     }
 
+    // Test endpoint for SQL LookAheadFetching: returns a scene with choices and their destination scenes.
+    @GetMapping("/{id}/lookahead")
+    public SceneResponseDTO getSceneLookAheadById(@PathVariable Integer id) {
+        return sceneService.getSqlSceneLookAheadById(id);
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public SceneResponseDTO createscene(
