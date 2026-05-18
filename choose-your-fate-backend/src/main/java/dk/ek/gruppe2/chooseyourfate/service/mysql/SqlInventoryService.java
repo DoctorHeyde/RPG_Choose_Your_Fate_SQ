@@ -72,7 +72,7 @@ public class SqlInventoryService implements InventoryDataAccess {
 
     public InventoryHasItemResponseDTO toInventoryHasItemDTO(InventoryHasItem itemInInventory) {
         ItemResponseDTO itemResponseDTO= itemService.toDto(itemInInventory.getItem());
-        return new InventoryHasItemResponseDTO(itemInInventory.getInventory().getId(), itemInInventory.getAmount(), itemResponseDTO);
+        return new InventoryHasItemResponseDTO(itemInInventory.getAmount(), itemResponseDTO);
     }
 
     private InventoryResponseDTO toInventoryResponseDTO(Inventory inventory) {
@@ -92,6 +92,16 @@ public class SqlInventoryService implements InventoryDataAccess {
             inventoryHasItemRepository.save(inventoryHasItem);
         } else {
             inventoryHasItemRepository.delete(inventoryHasItem);
+        }
+    }
+
+    public boolean itemInInventory(Integer inventoryId, Integer itemId) {
+        return inventoryHasItemRepository.existsByInventoryIdAndItemId(inventoryId, itemId);
+    }
+
+    public void validateItemInInventory(Integer inventoryId, Integer itemId) {
+        if (!inventoryHasItemRepository.existsByInventoryIdAndItemId(inventoryId, itemId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 }

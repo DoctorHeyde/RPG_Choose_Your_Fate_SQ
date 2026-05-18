@@ -5,6 +5,7 @@ import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.interfaces.InventoryDataAccess;
 import dk.ek.gruppe2.chooseyourfate.service.mysql.SqlInventoryService;
 
+@Service
 public class InventoryService {
 
     private final SqlInventoryService sqlInventoryService;

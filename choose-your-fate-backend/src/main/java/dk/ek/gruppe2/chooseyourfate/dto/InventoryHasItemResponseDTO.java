@@ -11,7 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class InventoryHasItemResponseDTO {
 
-    private Integer inventoryId;
     private Integer amount;
     private ItemResponseDTO item;
 }

@@ -32,7 +32,7 @@ public class MigrationRunner {
         characterMigrationService.dropCollection();
 
         log.info("Migrating data");
-        raceDetailsMigrationService.migrate();      // no dependencies
+
         itemMigrationService.migrate();             // no dependencies
         chapterMigrationService.migrate();          // no dependencies
         raceDetailsMigrationService.migrate();      // depends on chapter
