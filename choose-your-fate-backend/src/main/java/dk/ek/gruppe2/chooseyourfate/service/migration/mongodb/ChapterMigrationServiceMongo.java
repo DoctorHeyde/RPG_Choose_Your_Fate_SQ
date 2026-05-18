@@ -42,6 +42,11 @@ public class ChapterMigrationServiceMongo {
         log.info("Migrated {} chapters", entities.size());
     }
 
+    public void dropCollection() {
+        log.info("dropping collection chapters");
+        mongoRepo.deleteAll();
+    }
+
     // SECOND PASS — resolve StartingSceneId
     // All scenes now exist in MongoDB so we can resolve all references
     public void migrateSecondPass() {

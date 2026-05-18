@@ -1,5 +1,6 @@
 package dk.ek.gruppe2.chooseyourfate.model.mongodb;
 
+import dk.ek.gruppe2.chooseyourfate.enums.ItemType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,5 +21,5 @@ public class ItemDocumentMongo {
     private String name;
     private String description;
     @Indexed
-    private String type;
+    private ItemType type;
 }

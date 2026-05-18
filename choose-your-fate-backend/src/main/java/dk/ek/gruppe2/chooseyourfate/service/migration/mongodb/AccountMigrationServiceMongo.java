@@ -46,4 +46,8 @@ public class AccountMigrationServiceMongo {
         log.info("Migrated {} accounts", entities.size());
     }
 
+    public void dropCollection() {
+        log.info("dropping collection accounts");
+        mongoRepo.deleteAll();
+    }
 }

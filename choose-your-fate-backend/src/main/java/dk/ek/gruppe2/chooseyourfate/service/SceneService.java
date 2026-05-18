@@ -1,8 +1,8 @@
 package dk.ek.gruppe2.chooseyourfate.service;
 
 import java.util.List;
-import java.util.Optional;
 
+import dk.ek.gruppe2.chooseyourfate.dto.scene.SceneLookaheadResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.model.mongodb.SceneDocumentMongo;
 import dk.ek.gruppe2.chooseyourfate.service.mongodb.MongoSceneService;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,12 @@ public class SceneService {
         return resolveDataService(source).getAllScenes();
     }
 
-    public SceneResponseDTO getSceneById(DataSourceType source, Integer id) {
+    public SceneLookaheadResponseDTO getSceneById(DataSourceType source, Integer id) {
+        return resolveDataService(source).getSceneById(id);
+    }
+
+    // Calls the SQL-only lookahead implementation directly for easy endpoint testing.
+    public SceneLookaheadResponseDTO getSqlSceneLookAheadById(DataSourceType source,Integer id) {
         return resolveDataService(source).getSceneById(id);
     }
 
@@ -52,10 +57,6 @@ public class SceneService {
 
     public SceneResponseDTO registerScene(CreateSceneRequestDTO request) {
         return sqlSceneService.createScene(request);
-    }
-
-    public Optional<SceneDocumentMongo> getSceneWithNextScene(DataSourceType source, String id) {
-        return mongoSceneService.getSceneWithNextScene(id);
     }
 
     private SceneDataAccess resolveDataService(DataSourceType source) {
