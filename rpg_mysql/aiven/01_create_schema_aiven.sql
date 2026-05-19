@@ -171,6 +171,9 @@ CREATE TABLE IF NOT EXISTS `defaultdb`.`character_path` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `character_id` INT NOT NULL,
   `summary` LONGTEXT NULL DEFAULT NULL,
+  `audio_blob` mediumblob,
+  `summary_updated_at` datetime DEFAULT NULL,
+  `audio_blob_updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   INDEX `character_id_idx` (`character_id` ASC) VISIBLE,
   CONSTRAINT `fk_character_path_character`

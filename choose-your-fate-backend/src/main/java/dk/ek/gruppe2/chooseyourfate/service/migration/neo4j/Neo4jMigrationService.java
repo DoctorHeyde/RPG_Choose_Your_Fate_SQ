@@ -326,7 +326,12 @@ public class Neo4jMigrationService {
         for (Item item : items) {
             tx.run(
                     "MERGE (i:Item {id: $id}) SET i.name = $name, i.description = $description, i.type = $type",
-                    params("id", item.getId(), "name", item.getName(), "description", item.getDescription(), "type", item.getType())
+                    params(
+                            "id", item.getId(),
+                            "name", item.getName(),
+                            "description", item.getDescription(),
+                            "type", item.getType() == null ? null : item.getType().name()
+                    )
             ).consume();
         }
 
