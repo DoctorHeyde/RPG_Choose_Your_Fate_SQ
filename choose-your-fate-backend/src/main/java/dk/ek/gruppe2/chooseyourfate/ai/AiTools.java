@@ -6,7 +6,8 @@ import dk.ek.gruppe2.chooseyourfate.model.mysql.CharacterAvatar;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.CharacterAvatarRepository;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.CharacterPathChoiceRepository;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.CharacterPathRepository;
-import dk.ek.gruppe2.chooseyourfate.service.mysql.SqlCharacterPathService;
+import dk.ek.gruppe2.chooseyourfate.service.CharacterPathService;
+
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
@@ -17,13 +18,13 @@ import java.util.stream.Collectors;
 public class AiTools {
 
     private final CharacterAvatarRepository characterAvatarRepository;
-    private final SqlCharacterPathService characterPathService;
+    private final CharacterPathService characterPathService;
     private final CharacterPathRepository characterPathRepository;
     private final CharacterPathChoiceRepository characterPathChoiceRepository;
 
     public AiTools(
             CharacterAvatarRepository characterAvatarRepository,
-            SqlCharacterPathService characterPathService,
+            CharacterPathService characterPathService,
             CharacterPathRepository characterPathRepository,
             CharacterPathChoiceRepository characterPathChoiceRepository
     ) {

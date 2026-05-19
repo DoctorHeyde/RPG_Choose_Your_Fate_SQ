@@ -2,18 +2,18 @@
 # The seeding only happens on the first start when the volume is created.
 # If you need to reset the seeding, run "docker compose down -v" to delete the volume.
 services:
-  rpg_mysql:
+  rpg_mysql_sq:
     image: mysql:9.5.0
-    container_name: rpg_mysql
+    container_name: rpg_mysql_sq
     ports:
       - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-123456}
     volumes:
-      - rpg_mysql:/var/lib/mysql
-      - ./rpg_mysql:/docker-entrypoint-initdb.d
-    hostname: rpg_mysql
+      - rpg_mysql_sq:/var/lib/mysql
+      - ./rpg_mysql_sq:/docker-entrypoint-initdb.d
+    hostname: rpg_mysql_sq
 
 volumes:
-  rpg_mysql:
+  rpg_mysql_sq:
     driver: local
