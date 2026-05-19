@@ -35,7 +35,7 @@ public class SqlItemService implements ItemDataAccess {
     }
 
     public ResponseEntity<ItemResponseDTO> createItem(ItemRequestDTO requestDTO) {
-        Item item = requestDTO.getItemEntity();
+        Item item = toEntity(requestDTO);
         Item savedItem = itemRepository.save(item);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ItemResponseDTO(savedItem));
     }
@@ -59,6 +59,14 @@ public class SqlItemService implements ItemDataAccess {
     public Item getItemEntity(Integer id) {
         return itemRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    public Item toEntity(ItemRequestDTO requestDTO) {
+            Item item = new Item();
+            item.setName(requestDTO.getName());
+            item.setDescription(requestDTO.getDescription());
+            item.setType(requestDTO.getType());
+            return item;
     }
 
     public ItemResponseDTO toDto(Item item) {

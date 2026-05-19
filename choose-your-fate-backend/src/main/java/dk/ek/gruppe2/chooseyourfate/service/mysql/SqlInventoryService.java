@@ -3,6 +3,7 @@ package dk.ek.gruppe2.chooseyourfate.service.mysql;
 import dk.ek.gruppe2.chooseyourfate.dto.InventoryHasItemResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.InventoryResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.ItemResponseDTO;
+import dk.ek.gruppe2.chooseyourfate.exception.ResourceNotFoundException;
 import dk.ek.gruppe2.chooseyourfate.interfaces.InventoryDataAccess;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Inventory;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.InventoryHasItem;
@@ -32,7 +33,10 @@ public class SqlInventoryService implements InventoryDataAccess {
 
     @Override
     public InventoryResponseDTO getInventoryByCharacterId(Integer characterId) {
-        Inventory inventory = inventoryRepository.findById(characterId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Inventory inventory = inventoryRepository.findByCharacter_Id(characterId);
+        if(inventory == null) {
+            throw new ResourceNotFoundException("Inventory with character id " + characterId + " not found");
+        }
         return toInventoryResponseDTO(inventory);
     }
 
@@ -72,7 +76,7 @@ public class SqlInventoryService implements InventoryDataAccess {
 
     public InventoryHasItemResponseDTO toInventoryHasItemDTO(InventoryHasItem itemInInventory) {
         ItemResponseDTO itemResponseDTO= itemService.toDto(itemInInventory.getItem());
-        return new InventoryHasItemResponseDTO(itemInInventory.getInventory().getId(), itemInInventory.getAmount(), itemResponseDTO);
+        return new InventoryHasItemResponseDTO(itemInInventory.getAmount(), itemResponseDTO);
     }
 
     private InventoryResponseDTO toInventoryResponseDTO(Inventory inventory) {
@@ -92,6 +96,12 @@ public class SqlInventoryService implements InventoryDataAccess {
             inventoryHasItemRepository.save(inventoryHasItem);
         } else {
             inventoryHasItemRepository.delete(inventoryHasItem);
+        }
+    }
+
+    public void validateItemInInventory(Integer inventoryId, Integer itemId) {
+        if (!inventoryHasItemRepository.existsByInventoryIdAndItemId(inventoryId, itemId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 }

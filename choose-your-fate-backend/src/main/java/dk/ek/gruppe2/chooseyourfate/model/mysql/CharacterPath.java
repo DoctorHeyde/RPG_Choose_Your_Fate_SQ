@@ -27,12 +27,12 @@ public class CharacterPath {
     @Lob
     private byte[] audioBlob;
 
-    @Column(columnDefinition = "DATETIME")
-    private LocalDateTime summary_updated_at;
+    @Column(columnDefinition = "DATETIME", name = "summary_updated_at")
+    private LocalDateTime summaryUpdatedAt;
 
 
-    @Column(columnDefinition = "DATETIME")
-    private LocalDateTime audio_blob_updated_at;
+    @Column(columnDefinition = "DATETIME", name = "audio_blob_updated_at")
+    private LocalDateTime audioBlobUpdatedAt;
 
     public CharacterPath() {}
 
@@ -48,20 +48,20 @@ public class CharacterPath {
     public byte[] getAudioBlob() { return audioBlob; }
     public void setAudioBlob(byte[] audioBlob) { this.audioBlob = audioBlob; }
 
-    public LocalDateTime getAudio_blob_updated_at() {
-        return audio_blob_updated_at;
+    public LocalDateTime getAudioBlobUpdatedAt() {
+        return audioBlobUpdatedAt;
     }
 
-    public LocalDateTime getSummary_updated_at() {
-        return summary_updated_at;
+    public LocalDateTime getSummaryUpdatedAt() {
+        return summaryUpdatedAt;
     }
 
-    public void setSummary_updated_at(LocalDateTime summary_updated_at) {
-        this.summary_updated_at = summary_updated_at;
+    public void setSummaryUpdatedAt(LocalDateTime summaryUpdatedAt) {
+        this.summaryUpdatedAt = summaryUpdatedAt;
     }
 
-    public void setAudio_blob_updated_at(LocalDateTime audio_blob_updated_at) {
-        this.audio_blob_updated_at = audio_blob_updated_at;
+    public void setAudioBlobUpdatedAt(LocalDateTime audioBlobUpdatedAt) {
+        this.audioBlobUpdatedAt = audioBlobUpdatedAt;
     }
 
 }

@@ -10,7 +10,7 @@ import dk.ek.gruppe2.chooseyourfate.dto.scene.UpdateSceneRequestDTO;
 public interface SceneDataAccess {
     List<SceneResponseDTO> getAllScenes();
 
-    SceneResponseDTO getSceneById(Integer id);
+    SceneLookaheadResponseDTO getSceneById(Integer id);
 
     SceneResponseDTO createScene(CreateSceneRequestDTO request);
 

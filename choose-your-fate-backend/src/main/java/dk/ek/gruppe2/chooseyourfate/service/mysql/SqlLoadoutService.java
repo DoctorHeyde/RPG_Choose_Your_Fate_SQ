@@ -5,6 +5,7 @@ import dk.ek.gruppe2.chooseyourfate.interfaces.LoadoutDataAccess;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Equipment;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Inventory;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Item;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,9 +33,11 @@ public class SqlLoadoutService implements LoadoutDataAccess {
     }
 
     @Override
+    @Transactional
     public LoadoutResponseDTO unequipItem(Integer characterId, Integer itemId) {
         Item item = itemService.getItemEntity(itemId);
         Inventory inventory = inventoryService.getInventoryEntityByCharacterId(characterId);
+        equipmentService.validateItemEquipped(characterId, item);
         Equipment equipment = equipmentService.getEquipmentEntity(characterId);
         switch (item.getType()) {
             case ARMOR_HEAD ->  {
@@ -56,12 +59,14 @@ public class SqlLoadoutService implements LoadoutDataAccess {
     }
 
     @Override
+    @Transactional
     public LoadoutResponseDTO equipItem(Integer characterId, Integer itemId) {
         Item item = itemService.getItemEntity(itemId);
         Inventory inventory = inventoryService.getInventoryEntityByCharacterId(characterId);
         Equipment equipment = equipmentService.getEquipmentEntity(characterId);
         InventoryResponseDTO updatedInventory;
         Item currentlyEquippedItem = null;
+        inventoryService.validateItemInInventory(inventory.getId(), itemId);
         switch (item.getType()) {
             case ARMOR_HEAD ->  {
                 if (equipment.getHead() != null) {

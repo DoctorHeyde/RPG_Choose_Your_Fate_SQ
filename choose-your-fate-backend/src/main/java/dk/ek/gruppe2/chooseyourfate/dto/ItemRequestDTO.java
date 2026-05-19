@@ -17,12 +17,4 @@ public class ItemRequestDTO {
     private String description;
     private ItemType type;
 
-    public Item getItemEntity() {
-        Item item = new Item();
-        item.setName(getName());
-        item.setDescription(getDescription());
-        item.setType(getType());
-        return item;
-    }
-
 }

@@ -61,6 +61,7 @@ public class Neo4jLoadoutRepositoryImpl implements Neo4jLoadoutRepository {
                         ORDER BY item.id
                         """)
                 .bind(characterId).to("characterId")
+
                 .fetchAs(InventoryItemData.class)
                 .mappedBy((typeSystem, itemRecord) -> {
                     if (itemRecord.get("itemId").isNull()) {

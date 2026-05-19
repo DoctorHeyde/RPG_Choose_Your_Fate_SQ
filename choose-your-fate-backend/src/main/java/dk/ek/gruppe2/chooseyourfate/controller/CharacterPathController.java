@@ -46,6 +46,7 @@ public class CharacterPathController {
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
     public ResponseEntity<byte[]> textToSpeech(@PathVariable Integer characterId) {
         byte[] bytes = ttsService.textToSpeech(characterId);
+        System.out.println("Audio blob size: " + bytes.length + " bytes");
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "audio/mpeg")
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"speech.mp3\"")

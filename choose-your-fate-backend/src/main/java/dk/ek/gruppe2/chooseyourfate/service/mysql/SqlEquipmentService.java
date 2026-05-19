@@ -15,20 +15,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SqlEquipmentService implements EquipmentDataAccess {
 
     private final EquipmentRepository equipmentRepository;
     private final SqlItemService itemService;
-    private final SqlInventoryService inventoryService;
-    private final InventoryHasItemRepository inventoryHasItemRepository;
 
     public SqlEquipmentService(EquipmentRepository equipmentRepository, SqlItemService itemService, SqlInventoryService inventoryService, InventoryHasItemRepository inventoryHasItemRepository) {
         this.equipmentRepository = equipmentRepository;
         this.itemService = itemService;
-        this.inventoryService = inventoryService;
-        this.inventoryHasItemRepository = inventoryHasItemRepository;
     }
 
     @Override
@@ -66,9 +63,9 @@ public class SqlEquipmentService implements EquipmentDataAccess {
     private EquipmentResponseDTO toDto(Equipment equipment) {
         return new EquipmentResponseDTO(
                 equipment.getCharacterId(),
-                equipment.getHead() == null ? null : itemService.findById(equipment.getHead().getId()),
-                equipment.getChest() == null ? null : itemService.findById(equipment.getChest().getId()),
-                equipment.getLegs() == null ? null : itemService.findById(equipment.getLegs().getId())
+                equipment.getHead() == null ? null : itemService.toDto(equipment.getHead()),
+                equipment.getChest() == null ? null : itemService.toDto(equipment.getChest()),
+                equipment.getLegs() == null ? null : itemService.toDto(equipment.getLegs())
         );
     }
 
@@ -84,6 +81,33 @@ public class SqlEquipmentService implements EquipmentDataAccess {
         }
         else {
             return null;
+        }
+    }
+
+
+    public void validateItemEquipped(Integer characterId, Item item) {
+        Equipment equipment = equipmentRepository.findById(characterId).orElseThrow(() -> new ResourceNotFoundException("Equipment not found for character id: " + characterId));
+        switch (item.getType()) {
+            case ARMOR_HEAD -> {
+                if (equipment.getHead() == null || !equipment.getHead().getId().equals(item.getId())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Character does not have this head item equipped");
+                }
+            }
+            case ARMOR_CHEST -> {
+                if (equipment.getChest() == null || !equipment.getChest().getId().equals(item.getId())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Character does not have this chest item equipped");
+                }
+
+            }
+            case ARMOR_LEGS -> {
+                if (equipment.getLegs() == null || !equipment.getLegs().getId().equals(item.getId())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Character does not have this leg item equipped");
+                }
+
+            }
+            default -> {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid item type: " + item.getType());
+            }
         }
     }
 }

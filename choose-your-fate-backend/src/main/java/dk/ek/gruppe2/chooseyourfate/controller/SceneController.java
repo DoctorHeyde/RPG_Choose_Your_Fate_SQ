@@ -40,11 +40,17 @@ public class SceneController {
     }
 
     @GetMapping("/{id}")
-    public SceneResponseDTO getsceneById(
+    public SceneLookaheadResponseDTO getsceneById(
             @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
             @PathVariable Integer id
     ) {
         return sceneService.getSceneById(dataSource, id);
+    }
+    @GetMapping("/{id}/lookahead")
+    public SceneLookaheadResponseDTO getSceneLookAheadById(
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @PathVariable Integer id) {
+        return sceneService.getSqlSceneLookAheadById(dataSource ,id);
     }
 
     @PostMapping
