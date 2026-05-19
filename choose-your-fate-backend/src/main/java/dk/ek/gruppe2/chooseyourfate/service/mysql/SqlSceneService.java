@@ -37,8 +37,8 @@ public class SqlSceneService implements SceneDataAccess {
 
     @Override
     // Returns one SQL scene with the choices and destination scenes already loaded.
-    public SceneLookaheadResponseDTO getSceneById(Integer id) {
-        return new SceneLookaheadResponseDTO(getSceneEntity(id));
+    public SceneResponseDTO getSceneById(Integer id) {
+        return new SceneResponseDTO(getSceneEntity(id));
     }
 
     @Override
@@ -71,5 +71,10 @@ public class SqlSceneService implements SceneDataAccess {
     private Chapter getChapterById(Integer chapterId){
         return chapterRepository.findById(chapterId)
             .orElseThrow(() -> new ResourceNotFoundException("Chapter not found with id: " + chapterId));
+    }
+
+    @Override
+    public SceneLookaheadResponseDTO getSceneLookahead(Integer id) {
+        return new SceneLookaheadResponseDTO(getSceneEntity(id));
     }
 }

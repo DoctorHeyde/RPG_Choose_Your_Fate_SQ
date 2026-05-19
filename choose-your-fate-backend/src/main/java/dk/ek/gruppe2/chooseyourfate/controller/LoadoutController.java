@@ -27,6 +27,7 @@ public class LoadoutController {
         return loadoutService.getLoadoutByCharacterId(dataSource, characterId);
     }
 
+
     @PostMapping("/{characterId}/unequip")
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
     public LoadoutResponseDTO unequipItem(

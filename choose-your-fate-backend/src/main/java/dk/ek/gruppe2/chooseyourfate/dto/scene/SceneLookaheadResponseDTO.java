@@ -1,9 +1,11 @@
 package dk.ek.gruppe2.chooseyourfate.dto.scene;
+
 import dk.ek.gruppe2.chooseyourfate.dto.choice.ChoiceResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Choice;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Scene;
 
 import java.util.Comparator;
+
 import java.util.List;
 
 public class SceneLookaheadResponseDTO {
@@ -25,7 +27,6 @@ public class SceneLookaheadResponseDTO {
     }
 
 
-
     public SceneLookaheadResponseDTO(Scene scene) {
         this.scene = new SceneResponseDTO(scene);
         this.choices = scene.getChoices()
@@ -40,7 +41,6 @@ public class SceneLookaheadResponseDTO {
         })
                 .toList();
     }
-
     public SceneResponseDTO getScene() {
         return scene;
     }

@@ -40,17 +40,11 @@ public class SceneController {
     }
 
     @GetMapping("/{id}")
-    public SceneLookaheadResponseDTO getsceneById(
+    public SceneResponseDTO getsceneById(
             @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
             @PathVariable Integer id
     ) {
         return sceneService.getSceneById(dataSource, id);
-    }
-    @GetMapping("/{id}/lookahead")
-    public SceneLookaheadResponseDTO getSceneLookAheadById(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
-            @PathVariable Integer id) {
-        return sceneService.getSqlSceneLookAheadById(dataSource ,id);
     }
 
     @PostMapping
@@ -80,4 +74,13 @@ public class SceneController {
     ) {
         sceneService.deleteScene(dataSource, id);
     }
+
+    @GetMapping("/{id}/lookahead")
+    public SceneLookaheadResponseDTO getSceneLookahead(
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @PathVariable Integer id
+    ) {
+        return sceneService.getSceneLookahead(dataSource, id);
+    }
+
 }

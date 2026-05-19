@@ -5,6 +5,7 @@ import dk.ek.gruppe2.chooseyourfate.dto.UpdateEquipmentRequestDTO;
 import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.interfaces.LoadoutDataAccess;
 import dk.ek.gruppe2.chooseyourfate.service.mysql.SqlLoadoutService;
+import dk.ek.gruppe2.chooseyourfate.service.neo4j.Neo4jLoadoutService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,16 +14,16 @@ import java.util.List;
 public class LoadoutService {
 
     private final SqlLoadoutService sqlLoadoutService;
-    //private final Neo4jLoadoutService neo4jLoadoutService;
+    private final Neo4jLoadoutService neo4jLoadoutService;
     //private final MongoLoadoutService mongoLoadoutService;
 
     public LoadoutService(
-            SqlLoadoutService sqlLoadoutService
-            //Neo4jLoadoutService neo4jLoadoutService,
+            SqlLoadoutService sqlLoadoutService,
+            Neo4jLoadoutService neo4jLoadoutService
             //MongoLoadoutService mongoLoadoutService
     ) {
         this.sqlLoadoutService = sqlLoadoutService;
-        //this.neo4jLoadoutService = neo4jLoadoutService;
+        this.neo4jLoadoutService = neo4jLoadoutService;
         //this.mongoLoadoutService = mongoLoadoutService;
     }
 
@@ -41,7 +42,7 @@ public class LoadoutService {
     private LoadoutDataAccess resolveDataService(DataSourceType source) {
         return switch (source) {
             case SQL -> sqlLoadoutService;
-            //case NEO4J -> neo4jLoadoutService;
+            case NEO4J -> neo4jLoadoutService;
             //case MONGODB -> mongoLoadoutservice;
             default -> throw new IllegalArgumentException("Unexpected value: " + source);
         };
