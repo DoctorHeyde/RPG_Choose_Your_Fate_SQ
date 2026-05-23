@@ -6,7 +6,7 @@ COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
 # Copy source and build
-COPY src ./src
+COPY src ./choose-your-fate-backend/src
 RUN mvn clean package -DskipTests -B
 
 # Stage 2: Run
