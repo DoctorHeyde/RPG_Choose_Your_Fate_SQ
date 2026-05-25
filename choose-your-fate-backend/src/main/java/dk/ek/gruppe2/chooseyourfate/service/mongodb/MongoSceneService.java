@@ -31,7 +31,7 @@ public class MongoSceneService implements SceneDataAccess {
 
     @Override
     public SceneResponseDTO getSceneById(String id) {
-        return toDto(sceneRepository.getSceneById(id));
+        return toDto(sceneRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id)));
     }
 
     // In your service
