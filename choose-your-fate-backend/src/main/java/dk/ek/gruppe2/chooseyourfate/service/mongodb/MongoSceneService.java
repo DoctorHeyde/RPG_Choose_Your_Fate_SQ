@@ -46,7 +46,7 @@ public class MongoSceneService implements SceneDataAccess {
 
     @Override
     public SceneResponseDTO updateScene(String id, UpdateSceneRequestDTO request) {
-        SceneDocumentMongo scene = sceneRepository.getSceneById(id);
+        SceneDocumentMongo scene = sceneRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
         scene.setName(request.getName());
         scene.setChapterId(request.getMongoChapterId());
         SceneDocumentMongo saved = sceneRepository.save(scene);
