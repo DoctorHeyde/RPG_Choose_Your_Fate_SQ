@@ -8,7 +8,6 @@ import dk.ek.gruppe2.chooseyourfate.service.mysql.SqlItemService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.xml.crypto.Data;
 import java.util.List;
 
 @Service

@@ -1,12 +1,10 @@
 package dk.ek.gruppe2.chooseyourfate.service.mysql;
 
 import dk.ek.gruppe2.chooseyourfate.dto.EquipmentResponseDTO;
-import dk.ek.gruppe2.chooseyourfate.dto.UpdateEquipmentRequestDTO;
 import dk.ek.gruppe2.chooseyourfate.enums.ItemType;
 import dk.ek.gruppe2.chooseyourfate.exception.ResourceNotFoundException;
 import dk.ek.gruppe2.chooseyourfate.interfaces.EquipmentDataAccess;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Equipment;
-import dk.ek.gruppe2.chooseyourfate.model.mysql.Inventory;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Item;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.EquipmentRepository;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.InventoryHasItemRepository;
@@ -15,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class SqlEquipmentService implements EquipmentDataAccess {

@@ -1,6 +1,5 @@
 package dk.ek.gruppe2.chooseyourfate.service.migration.mongodb;
 
-import dk.ek.gruppe2.chooseyourfate.exception.ResourceNotFoundException;
 import dk.ek.gruppe2.chooseyourfate.model.mongodb.*;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.*;
 import dk.ek.gruppe2.chooseyourfate.repository.mongodb.CharacterAvatarRepositoryMongo;

@@ -20,7 +20,6 @@ public class AccountNode {
     private Role role;
 
     public AccountNode() {
-        // TODO document why this constructor is empty
     }
 
     public Integer getId() {

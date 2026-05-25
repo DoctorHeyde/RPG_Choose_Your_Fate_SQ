@@ -1,7 +1,7 @@
 package dk.ek.gruppe2.chooseyourfate.controller;
 
 import dk.ek.gruppe2.chooseyourfate.dto.EquipmentResponseDTO;
-import dk.ek.gruppe2.chooseyourfate.dto.UpdateEquipmentRequestDTO;
+import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.service.EquipmentService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +23,7 @@ public class EquipmentController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<EquipmentResponseDTO> getAllEquipment(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource
     ) {
         return equipmentService.getAllEquipment(dataSource);
     }
@@ -31,7 +31,7 @@ public class EquipmentController {
     @GetMapping("/{characterId}")
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
     public EquipmentResponseDTO getEquipmentByCharacterId(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer characterId
     ) {
         return equipmentService.getEquipmentByCharacterId(dataSource, characterId);

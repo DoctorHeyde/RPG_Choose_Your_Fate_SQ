@@ -1,7 +1,6 @@
 package dk.ek.gruppe2.chooseyourfate.service.mongodb;
 
 import dk.ek.gruppe2.chooseyourfate.dto.EquipmentResponseDTO;
-import dk.ek.gruppe2.chooseyourfate.dto.UpdateEquipmentRequestDTO;
 import dk.ek.gruppe2.chooseyourfate.interfaces.EquipmentDataAccess;
 import org.springframework.stereotype.Service;
 

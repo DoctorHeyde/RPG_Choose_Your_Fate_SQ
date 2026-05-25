@@ -1,15 +1,12 @@
 package dk.ek.gruppe2.chooseyourfate.service;
 
 import dk.ek.gruppe2.chooseyourfate.dto.LoadoutResponseDTO;
-import dk.ek.gruppe2.chooseyourfate.dto.UpdateEquipmentRequestDTO;
 import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.interfaces.LoadoutDataAccess;
 import dk.ek.gruppe2.chooseyourfate.service.mongodb.MongoLoadoutService;
 import dk.ek.gruppe2.chooseyourfate.service.mysql.SqlLoadoutService;
 import dk.ek.gruppe2.chooseyourfate.service.neo4j.Neo4jLoadoutService;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class LoadoutService {

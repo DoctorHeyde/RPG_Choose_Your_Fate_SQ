@@ -32,14 +32,14 @@ public class ChapterController {
 
     @GetMapping
     public List<ChapterResponseDTO> getAllChapters(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource
     ) {
         return chapterService.getAllChapters(dataSource);
     }
 
     @GetMapping("/{id}")
     public ChapterResponseDTO getChapterById(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer id
     ) {
         return chapterService.getChapterById(dataSource, id);
@@ -48,7 +48,7 @@ public class ChapterController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ChapterResponseDTO createChapter(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @RequestBody CreateChapterRequestDTO request
     ) {
         return chapterService.createChapter(dataSource, request);
@@ -57,7 +57,7 @@ public class ChapterController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ChapterResponseDTO updateChapter(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer id,
             @RequestBody UpdateChapterRequestDTO request
     ) {
@@ -67,7 +67,7 @@ public class ChapterController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteChapter(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer id
     ) {
         chapterService.deleteChapter(dataSource, id);

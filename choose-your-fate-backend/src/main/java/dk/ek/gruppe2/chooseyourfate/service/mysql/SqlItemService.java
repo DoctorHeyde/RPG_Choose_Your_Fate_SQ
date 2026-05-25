@@ -5,7 +5,6 @@ import dk.ek.gruppe2.chooseyourfate.dto.ItemResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.interfaces.ItemDataAccess;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Item;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.ItemRepository;
-import dk.ek.gruppe2.chooseyourfate.service.ItemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

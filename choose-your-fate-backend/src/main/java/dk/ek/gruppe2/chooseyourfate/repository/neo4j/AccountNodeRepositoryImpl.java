@@ -4,7 +4,6 @@ import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Repository;
 
 import dk.ek.gruppe2.chooseyourfate.enums.Role;
-import dk.ek.gruppe2.chooseyourfate.repository.neo4j.AccountNodeRepository.AccountSnapshot;
 
 import java.util.List;
 import java.util.Optional;

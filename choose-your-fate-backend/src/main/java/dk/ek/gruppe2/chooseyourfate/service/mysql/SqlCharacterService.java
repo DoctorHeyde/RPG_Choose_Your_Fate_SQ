@@ -9,7 +9,6 @@ import dk.ek.gruppe2.chooseyourfate.interfaces.CharacterDataAccess;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Chapter;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.CharacterAvatar;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.CharacterDetails;
-import dk.ek.gruppe2.chooseyourfate.repository.mysql.AccountRepository;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.RaceDetails;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Scene;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.ChapterRepository;

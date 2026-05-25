@@ -1,19 +1,13 @@
 package dk.ek.gruppe2.chooseyourfate.security;
 
-import java.util.Optional;
 
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
-
-import dk.ek.gruppe2.chooseyourfate.dto.AccountResponseDTO;
-import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.model.mongodb.AccountDocumentMongo;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Account;
-import dk.ek.gruppe2.chooseyourfate.model.neo4j.AccountNode;
 import dk.ek.gruppe2.chooseyourfate.repository.mongodb.AccountRepositoryMongo;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.AccountRepository;
 import dk.ek.gruppe2.chooseyourfate.repository.neo4j.AccountNodeRepository;
-import dk.ek.gruppe2.chooseyourfate.repository.neo4j.AccountNodeRepository.AccountData;
 import dk.ek.gruppe2.chooseyourfate.repository.neo4j.AccountNodeRepository.AccountSnapshot;
 
 @Service

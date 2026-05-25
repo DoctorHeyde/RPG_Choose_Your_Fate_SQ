@@ -2,6 +2,7 @@ package dk.ek.gruppe2.chooseyourfate.controller;
 
 import dk.ek.gruppe2.chooseyourfate.dto.CharacterPathResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.UpdateCharacterPathRequestDTO;
+import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.service.CharacterPathService;
 import dk.ek.gruppe2.chooseyourfate.service.TTSService;
 import org.springframework.http.HttpHeaders;
@@ -28,7 +29,7 @@ public class CharacterPathController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<CharacterPathResponseDTO> getAllCharacterPaths(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource
     ) {
         return characterPathService.getAllCharacterPaths(dataSource);
     }
@@ -36,7 +37,7 @@ public class CharacterPathController {
     @GetMapping("/{characterId}")
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
     public CharacterPathResponseDTO getCharacterPathByCharacterId(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer characterId
     ) {
         return characterPathService.getCharacterPathByCharacterId(dataSource, characterId);
@@ -46,7 +47,6 @@ public class CharacterPathController {
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
     public ResponseEntity<byte[]> textToSpeech(@PathVariable Integer characterId) {
         byte[] bytes = ttsService.textToSpeech(characterId);
-        System.out.println("Audio blob size: " + bytes.length + " bytes");
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "audio/mpeg")
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"speech.mp3\"")
@@ -56,7 +56,7 @@ public class CharacterPathController {
     @PutMapping("/{characterId}")
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
     public CharacterPathResponseDTO updateCharacterPath(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer characterId,
             @RequestBody UpdateCharacterPathRequestDTO request
     ) {

@@ -8,8 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.model.mongodb.AccountDocumentMongo;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Account;
-import dk.ek.gruppe2.chooseyourfate.model.neo4j.AccountNode;
-import dk.ek.gruppe2.chooseyourfate.repository.neo4j.AccountNodeRepository.AccountData;
 import dk.ek.gruppe2.chooseyourfate.repository.neo4j.AccountNodeRepository.AccountSnapshot;
 
 import java.util.Collection;

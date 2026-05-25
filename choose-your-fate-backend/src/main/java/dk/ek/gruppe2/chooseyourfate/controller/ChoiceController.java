@@ -33,14 +33,14 @@ public class ChoiceController {
 
     @GetMapping
     public List<ChoiceResponseDTO> getAllChoices(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource
     ) {
         return choiceService.getAllChoices(dataSource);
     }
 
     @GetMapping("/{id}")
     public ChoiceResponseDTO getChoiceById(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer id
     ) {
         return choiceService.getChoiceById(dataSource, id);
@@ -49,7 +49,7 @@ public class ChoiceController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ChoiceResponseDTO createChoice(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @RequestBody CreateChoiceRequestDTO request
     ) {
         return choiceService.createChoice(dataSource, request);
@@ -58,7 +58,7 @@ public class ChoiceController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ChoiceResponseDTO updateChoice(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer id,
             @RequestBody UpdateChoiceRequestDTO request
     ) {
@@ -68,7 +68,7 @@ public class ChoiceController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteChoice(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer id
     ) {
         choiceService.deleteChoice(dataSource, id);
