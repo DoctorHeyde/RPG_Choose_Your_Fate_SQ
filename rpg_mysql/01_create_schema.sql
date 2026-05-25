@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS `choose_your_fate`.`audit_log` (
   `table_name` VARCHAR(100) NOT NULL,
   `entity_id` VARCHAR(100) NOT NULL,
   `action_type` VARCHAR(20) NOT NULL,
+  `database_user` VARCHAR(100) NOT NULL,
   `changed_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `old_data` JSON NULL,
   `new_data` JSON NULL,

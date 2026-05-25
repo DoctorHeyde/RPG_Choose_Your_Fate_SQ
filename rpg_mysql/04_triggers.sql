@@ -13,11 +13,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_account_after_insert`$$
 CREATE TRIGGER `audit_account_after_insert` AFTER INSERT ON `account` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, new_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, new_data)
 VALUES (
     'account',
     NEW.id,
     'INSERT',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', NEW.id,
         'username', NEW.username,
@@ -31,11 +32,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_account_after_update`$$
 CREATE TRIGGER `audit_account_after_update` AFTER UPDATE ON `account` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, old_data, new_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data, new_data)
 VALUES (
     'account',
     NEW.id,
     'UPDATE',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', OLD.id,
         'username', OLD.username,
@@ -56,11 +58,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_account_after_delete`$$
 CREATE TRIGGER `audit_account_after_delete` AFTER DELETE ON `account` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, old_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data)
 VALUES (
     'account',
     OLD.id,
     'DELETE',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', OLD.id,
         'username', OLD.username,
@@ -74,11 +77,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_character_avatar_after_insert`$$
 CREATE TRIGGER `audit_character_avatar_after_insert` AFTER INSERT ON `character_avatar` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, new_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, new_data)
 VALUES (
     'character_avatar',
     NEW.id,
     'INSERT',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', NEW.id,
         'account_id', NEW.account_id,
@@ -94,11 +98,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_character_avatar_after_update`$$
 CREATE TRIGGER `audit_character_avatar_after_update` AFTER UPDATE ON `character_avatar` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, old_data, new_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data, new_data)
 VALUES (
     'character_avatar',
     NEW.id,
     'UPDATE',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', OLD.id,
         'account_id', OLD.account_id,
@@ -123,11 +128,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_character_avatar_after_delete`$$
 CREATE TRIGGER `audit_character_avatar_after_delete` AFTER DELETE ON `character_avatar` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, old_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data)
 VALUES (
     'character_avatar',
     OLD.id,
     'DELETE',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', OLD.id,
         'account_id', OLD.account_id,
@@ -143,11 +149,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_chapter_after_insert`$$
 CREATE TRIGGER `audit_chapter_after_insert` AFTER INSERT ON `chapter` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, new_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, new_data)
 VALUES (
     'chapter',
     NEW.id,
     'INSERT',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', NEW.id,
         'name', NEW.name,
@@ -159,11 +166,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_chapter_after_update`$$
 CREATE TRIGGER `audit_chapter_after_update` AFTER UPDATE ON `chapter` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, old_data, new_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data, new_data)
 VALUES (
     'chapter',
     NEW.id,
     'UPDATE',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', OLD.id,
         'name', OLD.name,
@@ -180,11 +188,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_chapter_after_delete`$$
 CREATE TRIGGER `audit_chapter_after_delete` AFTER DELETE ON `chapter` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, old_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data)
 VALUES (
     'chapter',
     OLD.id,
     'DELETE',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', OLD.id,
         'name', OLD.name,
@@ -196,11 +205,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_scene_after_insert`$$
 CREATE TRIGGER `audit_scene_after_insert` AFTER INSERT ON `scene` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, new_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, new_data)
 VALUES (
     'scene',
     NEW.id,
     'INSERT',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', NEW.id,
         'chapter_id', NEW.chapter_id,
@@ -212,11 +222,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_scene_after_update`$$
 CREATE TRIGGER `audit_scene_after_update` AFTER UPDATE ON `scene` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, old_data, new_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data, new_data)
 VALUES (
     'scene',
     NEW.id,
     'UPDATE',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', OLD.id,
         'chapter_id', OLD.chapter_id,
@@ -233,11 +244,12 @@ END$$
 DROP TRIGGER IF EXISTS `audit_scene_after_delete`$$
 CREATE TRIGGER `audit_scene_after_delete` AFTER DELETE ON `scene` FOR EACH ROW
 BEGIN
-INSERT INTO audit_log (table_name, entity_id, action_type, old_data)
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data)
 VALUES (
     'scene',
     OLD.id,
     'DELETE',
+    CURRENT_USER(),
     JSON_OBJECT(
         'id', OLD.id,
         'chapter_id', OLD.chapter_id,
