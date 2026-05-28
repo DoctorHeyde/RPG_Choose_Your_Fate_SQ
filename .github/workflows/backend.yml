@@ -59,4 +59,4 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Run Integration Tests
-      run: mvn verify
+      run: mvn failsafe:integration-test failsafe:verify
