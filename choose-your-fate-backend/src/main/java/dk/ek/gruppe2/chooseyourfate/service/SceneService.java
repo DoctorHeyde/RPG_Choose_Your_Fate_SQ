@@ -3,8 +3,6 @@ package dk.ek.gruppe2.chooseyourfate.service;
 import java.util.List;
 
 import dk.ek.gruppe2.chooseyourfate.dto.scene.SceneLookaheadResponseDTO;
-import dk.ek.gruppe2.chooseyourfate.service.mongodb.MongoSceneService;
-import dk.ek.gruppe2.chooseyourfate.service.neo4j.Neo4jSceneService;
 import org.springframework.stereotype.Service;
 
 import dk.ek.gruppe2.chooseyourfate.dto.scene.CreateSceneRequestDTO;

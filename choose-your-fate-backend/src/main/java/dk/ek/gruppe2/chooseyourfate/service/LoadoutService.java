@@ -3,26 +3,18 @@ package dk.ek.gruppe2.chooseyourfate.service;
 import dk.ek.gruppe2.chooseyourfate.dto.LoadoutResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.interfaces.LoadoutDataAccess;
-import dk.ek.gruppe2.chooseyourfate.service.mongodb.MongoLoadoutService;
 import dk.ek.gruppe2.chooseyourfate.service.mysql.SqlLoadoutService;
-import dk.ek.gruppe2.chooseyourfate.service.neo4j.Neo4jLoadoutService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LoadoutService {
 
     private final SqlLoadoutService sqlLoadoutService;
-    private final Neo4jLoadoutService neo4jLoadoutService;
-    private final MongoLoadoutService mongoLoadoutService;
 
     public LoadoutService(
-            SqlLoadoutService sqlLoadoutService,
-            Neo4jLoadoutService neo4jLoadoutService,
-            MongoLoadoutService mongoLoadoutService
+            SqlLoadoutService sqlLoadoutService
     ) {
         this.sqlLoadoutService = sqlLoadoutService;
-        this.neo4jLoadoutService = neo4jLoadoutService;
-        this.mongoLoadoutService = mongoLoadoutService;
     }
 
     public LoadoutResponseDTO getLoadoutByCharacterId(DataSourceType source, Integer characterId) {
@@ -40,8 +32,6 @@ public class LoadoutService {
     private LoadoutDataAccess resolveDataService(DataSourceType source) {
         return switch (source) {
             case SQL -> sqlLoadoutService;
-            case NEO4J -> neo4jLoadoutService;
-            case MONGODB -> mongoLoadoutService;
         };
     }
 

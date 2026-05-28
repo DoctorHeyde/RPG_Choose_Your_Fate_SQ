@@ -27,14 +27,6 @@ public class JwtUtil {
 
         JwtBuilder builder = Jwts.builder().setSubject(user.getUsername());
 
-        if (!user.mongoIsNull()) {
-            builder.claim("MongoId", user.getId(DataSourceType.MONGODB));
-        }
-
-        if (!user.neoIsNull()) {
-            builder.claim("NeoId", user.getId(DataSourceType.NEO4J));
-        }
-
         return builder
                 .setSubject(user.getUsername())
                 .claim("sqlId", user.getId(DataSourceType.SQL))

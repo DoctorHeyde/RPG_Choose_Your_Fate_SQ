@@ -14,7 +14,6 @@ public class RaceDetailsService {
     private final SqlRaceDetailsService sqlRaceDetailsService;
 
     public RaceDetailsService(
-            DataSourceResolver dataSourceResolver,
             SqlRaceDetailsService sqlRaceDetailsService
     ) {
         this.sqlRaceDetailsService = sqlRaceDetailsService;

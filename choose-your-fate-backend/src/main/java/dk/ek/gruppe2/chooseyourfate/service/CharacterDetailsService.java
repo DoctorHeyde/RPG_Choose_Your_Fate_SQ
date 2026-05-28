@@ -15,8 +15,7 @@ public class CharacterDetailsService {
     private final SqlCharacterDetailsService sqlCharacterDetailsService;
 
     public CharacterDetailsService(
-            DataSourceResolver dataSourceResolver,
-            SqlCharacterDetailsService sqlCharacterDetailsService
+        SqlCharacterDetailsService sqlCharacterDetailsService
     ) {
         this.sqlCharacterDetailsService = sqlCharacterDetailsService;
     }

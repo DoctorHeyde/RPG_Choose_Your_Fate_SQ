@@ -16,8 +16,7 @@ public class AccountService {
     private final SqlAccountService sqlAccountService;
 
     public AccountService(
-            DataSourceResolver dataSourceResolver,
-            SqlAccountService sqlAccountService
+        SqlAccountService sqlAccountService
     ) {
         this.sqlAccountService = sqlAccountService;
     }

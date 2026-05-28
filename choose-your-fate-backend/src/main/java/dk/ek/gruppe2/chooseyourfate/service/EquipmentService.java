@@ -14,8 +14,7 @@ public class EquipmentService {
     private final SqlEquipmentService sqlEquipmentService;
 
     public EquipmentService(
-            DataSourceResolver dataSourceResolver,
-            SqlEquipmentService sqlEquipmentService
+        SqlEquipmentService sqlEquipmentService
     ) {
         this.sqlEquipmentService = sqlEquipmentService;
     }
