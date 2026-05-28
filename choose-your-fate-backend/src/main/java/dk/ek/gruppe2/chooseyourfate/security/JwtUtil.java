@@ -5,9 +5,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-
 import java.util.Date;
 
 import javax.crypto.SecretKey;
@@ -25,7 +25,9 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails) {
         CustomUserDetails user = (CustomUserDetails) userDetails;
 
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder().setSubject(user.getUsername());
+
+        return builder
                 .setSubject(user.getUsername())
                 .claim("sqlId", user.getId(DataSourceType.SQL))
                 .claim("role", user.getAuthorities().iterator().next().getAuthority())

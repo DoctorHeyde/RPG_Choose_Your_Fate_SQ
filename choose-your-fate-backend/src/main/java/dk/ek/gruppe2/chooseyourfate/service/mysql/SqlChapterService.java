@@ -15,7 +15,6 @@ import dk.ek.gruppe2.chooseyourfate.model.mysql.Scene;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.ChapterRepository;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.SceneRepository;
 
-//TODO: add handling for moving player to different chapter.
 @Service
 public class SqlChapterService implements ChapterDataAccess {
 

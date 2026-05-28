@@ -1,6 +1,7 @@
 package dk.ek.gruppe2.chooseyourfate.service;
 
 import dk.ek.gruppe2.chooseyourfate.dto.CharacterResponseDTO;
+import dk.ek.gruppe2.chooseyourfate.dto.CharacterViewResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.CreateCharacterRequestDTO;
 import dk.ek.gruppe2.chooseyourfate.exception.ResourceNotFoundException;
 import dk.ek.gruppe2.chooseyourfate.interfaces.CharacterDataAccess;

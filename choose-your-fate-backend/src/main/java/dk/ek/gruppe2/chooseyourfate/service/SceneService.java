@@ -2,6 +2,7 @@ package dk.ek.gruppe2.chooseyourfate.service;
 
 import java.util.List;
 
+import dk.ek.gruppe2.chooseyourfate.dto.scene.SceneLookaheadResponseDTO;
 import org.springframework.stereotype.Service;
 
 import dk.ek.gruppe2.chooseyourfate.dto.scene.CreateSceneRequestDTO;
@@ -13,6 +14,7 @@ import dk.ek.gruppe2.chooseyourfate.service.mysql.SqlSceneService;
 
 @Service
 public class SceneService {
+
     private final SqlSceneService sqlSceneService;
 
     public SceneService(
@@ -25,7 +27,7 @@ public class SceneService {
         return resolveDataService(source).getAllScenes();
     }
 
-    public SceneResponseDTO getSceneById(DataSourceType source, Integer id) {
+    public SceneResponseDTO getSceneById(DataSourceType source, String id) {
         return resolveDataService(source).getSceneById(id);
     }
 
@@ -33,18 +35,17 @@ public class SceneService {
         return resolveDataService(source).createScene(request);
     }
 
-    public SceneResponseDTO updateScene(DataSourceType source, Integer id, UpdateSceneRequestDTO request) {
+    public SceneResponseDTO updateScene(DataSourceType source, String id, UpdateSceneRequestDTO request) {
         return resolveDataService(source).updateScene(id, request);
     }
 
-    public void deleteScene(DataSourceType source, Integer id) {
+    public void deleteScene(DataSourceType source, String id) {
         resolveDataService(source).deleteScene(id);
     }
 
-    public SceneResponseDTO registerScene(CreateSceneRequestDTO request) {
-        return sqlSceneService.createScene(request);
+    public SceneLookaheadResponseDTO getSceneLookahead(DataSourceType source, String id) {
+        return resolveDataService(source).getSceneLookahead(id);
     }
-
     private SceneDataAccess resolveDataService(DataSourceType source) {
         return switch (source) {
             case SQL -> sqlSceneService;
