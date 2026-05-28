@@ -1,7 +1,6 @@
 package dk.ek.gruppe2.chooseyourfate.controller;
 
 import dk.ek.gruppe2.chooseyourfate.dto.EquipmentResponseDTO;
-import dk.ek.gruppe2.chooseyourfate.dto.UpdateEquipmentRequestDTO;
 import dk.ek.gruppe2.chooseyourfate.service.EquipmentService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,12 +31,4 @@ public class EquipmentController {
         return equipmentService.getEquipmentByCharacterId(characterId);
     }
 
-    @PutMapping("/{characterId}")
-    @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
-    public EquipmentResponseDTO updateEquipment(
-            @PathVariable Integer characterId,
-            @RequestBody UpdateEquipmentRequestDTO request
-    ) {
-        return equipmentService.updateEquipment(characterId, request);
-    }
 }

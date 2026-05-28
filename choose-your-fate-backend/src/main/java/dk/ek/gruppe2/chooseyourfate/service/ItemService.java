@@ -26,7 +26,7 @@ public class ItemService {
         return response;
     }
 
-    public ItemResponseDTO getItemById(Integer id) {
+    public ItemResponseDTO findById(Integer id) {
         Item item = itemRepository.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
         ItemResponseDTO response = new ItemResponseDTO(item);
         return response;

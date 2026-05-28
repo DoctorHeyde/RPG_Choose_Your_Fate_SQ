@@ -25,7 +25,7 @@ public class ItemController {
 
     @GetMapping("/{id}")
     public ItemResponseDTO getItemById(@PathVariable("id") Integer id) {
-        return itemService.getItemById(id);
+        return itemService.findById(id);
     }
 
     @PostMapping

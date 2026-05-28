@@ -3,6 +3,7 @@ package com.example.chooseyourfatebackend.unitTests;
 import dk.ek.gruppe2.chooseyourfate.dto.InventoryHasItemResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.InventoryResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.ItemResponseDTO;
+import dk.ek.gruppe2.chooseyourfate.enums.ItemType;
 import dk.ek.gruppe2.chooseyourfate.exception.ResourceNotFoundException;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.*;
 import dk.ek.gruppe2.chooseyourfate.repository.mysql.InventoryHasItemRepository;
@@ -212,7 +213,7 @@ class InventoryServiceTest {
         fakeInventoryHasItem.setItem(fakeItem);
         fakeInventoryHasItem.setAmount(3);
 
-        ItemResponseDTO fakeItemResponseDTO = new ItemResponseDTO("TestItem", "Sword of Testing", "WEAPON");
+        ItemResponseDTO fakeItemResponseDTO = new ItemResponseDTO(1,"TestItem", "Sword of Testing", ItemType.WEAPON);
 
         when(itemService.toDto(fakeItem)).thenReturn(fakeItemResponseDTO);
 
