@@ -12,7 +12,6 @@ import java.util.List;
 @RequestMapping("/api/equipment")
 public class EquipmentController {
 
-    private static final String DATA_SOURCE_HEADER = "X-Data-Source";
 
     private final EquipmentService equipmentService;
 
@@ -22,28 +21,23 @@ public class EquipmentController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public List<EquipmentResponseDTO> getAllEquipment(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource
-    ) {
-        return equipmentService.getAllEquipment(dataSource);
+    public List<EquipmentResponseDTO> getAllEquipment() {
+        return equipmentService.getAllEquipment();
     }
 
     @GetMapping("/{characterId}")
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
-    public EquipmentResponseDTO getEquipmentByCharacterId(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource,
-            @PathVariable Integer characterId
+    public EquipmentResponseDTO getEquipmentByCharacterId(@PathVariable Integer characterId
     ) {
-        return equipmentService.getEquipmentByCharacterId(dataSource, characterId);
+        return equipmentService.getEquipmentByCharacterId(characterId);
     }
 
     @PutMapping("/{characterId}")
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
     public EquipmentResponseDTO updateEquipment(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource,
             @PathVariable Integer characterId,
             @RequestBody UpdateEquipmentRequestDTO request
     ) {
-        return equipmentService.updateEquipment(dataSource, characterId, request);
+        return equipmentService.updateEquipment(characterId, request);
     }
 }

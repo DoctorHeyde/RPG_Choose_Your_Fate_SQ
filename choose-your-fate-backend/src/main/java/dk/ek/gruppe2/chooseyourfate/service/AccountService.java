@@ -1,12 +1,13 @@
 package dk.ek.gruppe2.chooseyourfate.service;
 
-import dk.ek.gruppe2.chooseyourfate.datasource.DataSourceResolver;
 import dk.ek.gruppe2.chooseyourfate.dto.AccountResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.CreateAccountRequestDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.UpdateAccountRequestDTO;
-import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
-import dk.ek.gruppe2.chooseyourfate.interfaces.AccountDataAccess;
-import dk.ek.gruppe2.chooseyourfate.service.mysql.SqlAccountService;
+import dk.ek.gruppe2.chooseyourfate.exception.DuplicateResourceException;
+import dk.ek.gruppe2.chooseyourfate.exception.ResourceNotFoundException;
+import dk.ek.gruppe2.chooseyourfate.model.mysql.Account;
+import dk.ek.gruppe2.chooseyourfate.repository.mysql.AccountRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,45 +15,88 @@ import java.util.List;
 @Service
 public class AccountService {
 
-    private final DataSourceResolver dataSourceResolver;
-    private final SqlAccountService sqlAccountService;
+    private final AccountRepository accountRepository;
+    private final PasswordEncoder encoder;
 
-    public AccountService(
-            DataSourceResolver dataSourceResolver,
-            SqlAccountService sqlAccountService
-    ) {
-        this.dataSourceResolver = dataSourceResolver;
-        this.sqlAccountService = sqlAccountService;
+    public AccountService(AccountRepository accountRepository, PasswordEncoder encoder) {
+        this.accountRepository = accountRepository;
+        this.encoder = encoder;
     }
 
-    public List<AccountResponseDTO> getAllAccounts(String sourceHeader) {
-        return resolveDataService(sourceHeader).getAllAccounts();
+    public List<AccountResponseDTO> getAllAccounts() {
+        return accountRepository.findAll()
+                .stream()
+                .map(AccountResponseDTO::new)
+                .toList();
     }
 
-    public AccountResponseDTO getAccountById(String sourceHeader, Integer id) {
-        return resolveDataService(sourceHeader).getAccountById(id);
+
+    public AccountResponseDTO getAccountById(Integer id) {
+        return new AccountResponseDTO(getAccountEntity(id));
     }
 
-    public AccountResponseDTO createAccount(String sourceHeader, CreateAccountRequestDTO request) {
-        return resolveDataService(sourceHeader).createAccount(request);
+
+    public AccountResponseDTO createAccount(CreateAccountRequestDTO request) {
+        ensureUniqueUsername(request.getUsername(), null);
+        ensureUniqueEmail(request.getEmail(), null);
+
+        Account account = request.toEntity();
+        account.setCharacterLimit(3);
+        account.setPassword(encoder.encode(request.getPassword()));
+
+        return new AccountResponseDTO(accountRepository.save(account));
     }
 
-    public AccountResponseDTO updateAccount(String sourceHeader, Integer id, UpdateAccountRequestDTO request) {
-        return resolveDataService(sourceHeader).updateAccount(id, request);
+
+    public AccountResponseDTO updateAccount(Integer id, UpdateAccountRequestDTO request) {
+        Account account = getAccountEntity(id);
+
+        if (request.getUsername() != null && !request.getUsername().isBlank()) {
+            ensureUniqueUsername(request.getUsername(), id);
+            account.setUsername(request.getUsername());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            ensureUniqueEmail(request.getEmail(), id);
+            account.setEmail(request.getEmail());
+        }
+
+        if (request.getCharacterLimit() != null) {
+            account.setCharacterLimit(request.getCharacterLimit());
+        }
+
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            account.setPassword(encoder.encode(request.getPassword()));
+        }
+
+        return new AccountResponseDTO(accountRepository.save(account));
     }
 
-    public void deleteAccount(String sourceHeader, Integer id) {
-        resolveDataService(sourceHeader).deleteAccount(id);
+    public void deleteAccount(Integer id) {
+        if (!accountRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Account not found with id: " + id);
+        }
+        accountRepository.deleteById(id);
     }
 
-    public AccountResponseDTO registerAccount(CreateAccountRequestDTO request) {
-        return sqlAccountService.createAccount(request);
+    private Account getAccountEntity(Integer id) {
+        return accountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
     }
 
-    private AccountDataAccess resolveDataService(String sourceHeader) {
-        DataSourceType dataSourceType = dataSourceResolver.resolve(sourceHeader);
-        return switch (dataSourceType) {
-            case SQL -> sqlAccountService;
-        };
+    private void ensureUniqueUsername(String username, Integer currentId) {
+        accountRepository.findByUsername(username)
+                .filter(account -> !account.getId().equals(currentId))
+                .ifPresent(account -> {
+                    throw new DuplicateResourceException("Username already exists");
+                });
+    }
+
+    private void ensureUniqueEmail(String email, Integer currentId) {
+        accountRepository.findByEmail(email)
+                .filter(account -> !account.getId().equals(currentId))
+                .ifPresent(account -> {
+                    throw new DuplicateResourceException("Email already exists");
+                });
     }
 }

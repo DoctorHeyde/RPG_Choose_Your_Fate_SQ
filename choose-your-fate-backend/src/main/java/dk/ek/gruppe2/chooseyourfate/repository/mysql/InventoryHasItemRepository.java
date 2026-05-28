@@ -9,4 +9,6 @@ import java.util.List;
 public interface InventoryHasItemRepository extends JpaRepository<InventoryHasItem, InventoryHasItemId> {
     List<InventoryHasItem> findByInventory_Id(Integer inventoryId);
     List<InventoryHasItem> findByItem_Id(Integer itemId);
+
+    boolean existsByInventoryIdAndItemId(Integer inventoryId, Integer itemId);
 }

@@ -10,7 +10,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.security.CustomUserDetails;
 import dk.ek.gruppe2.chooseyourfate.security.CustomUserDetailsService;
 import dk.ek.gruppe2.chooseyourfate.security.JwtUtil;
@@ -53,7 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
                     Map<String, Object> extraInfo = new HashMap<>();
-                    extraInfo.put("sqlId", user.getId(DataSourceType.SQL));
+                    extraInfo.put("sqlId", user.getId());
 
                     auth.setDetails(extraInfo);
 

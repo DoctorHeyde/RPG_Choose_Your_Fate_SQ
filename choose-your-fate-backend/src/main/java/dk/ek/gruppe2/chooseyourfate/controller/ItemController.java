@@ -2,7 +2,7 @@ package dk.ek.gruppe2.chooseyourfate.controller;
 
 import dk.ek.gruppe2.chooseyourfate.dto.ItemRequestDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.ItemResponseDTO;
-import dk.ek.gruppe2.chooseyourfate.service.mysql.ItemService;
+import dk.ek.gruppe2.chooseyourfate.service.ItemService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

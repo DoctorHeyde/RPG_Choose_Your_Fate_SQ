@@ -1,11 +1,9 @@
 package dk.ek.gruppe2.chooseyourfate.controller;
 
 import dk.ek.gruppe2.chooseyourfate.dto.InventoryResponseDTO;
-import dk.ek.gruppe2.chooseyourfate.service.mysql.InventoryService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import dk.ek.gruppe2.chooseyourfate.service.InventoryService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/choose-your-fate/inventories")
@@ -17,8 +15,21 @@ public class InventoryController {
         this.inventoryService = inventoryService;
     }
 
-    @GetMapping("/{id}")
-    public InventoryResponseDTO getInventoryData(@PathVariable Integer id) {
-        return inventoryService.getInventoryData(id);
+    @GetMapping("/{characterId}")
+    @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#id, authentication)")
+    public InventoryResponseDTO getInventoryByCharacterId(@PathVariable Integer characterId) {
+        return inventoryService.getInventoryByCharacterId(characterId);
+    }
+
+    @PostMapping("/{inventoryId}/items/{itemId}")
+    @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#id, authentication)")
+    public InventoryResponseDTO addItemToInventory(@PathVariable Integer inventoryId, @PathVariable Integer itemId) {
+        return inventoryService.addItemToInventory(inventoryId, itemId);
+    }
+
+    @PostMapping("/{inventoryId}/items/{itemId}/use")
+    @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#id, authentication)")
+    public void useItem(@PathVariable Integer inventoryId, @PathVariable Integer itemId) {
+        inventoryService.useItem(inventoryId, itemId);
     }
 }
