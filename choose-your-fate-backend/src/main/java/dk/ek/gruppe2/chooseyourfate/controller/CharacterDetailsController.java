@@ -2,6 +2,7 @@ package dk.ek.gruppe2.chooseyourfate.controller;
 
 import dk.ek.gruppe2.chooseyourfate.dto.CharacterDetailsResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.UpdateCharacterDetailsRequestDTO;
+import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.service.CharacterDetailsService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class CharacterDetailsController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<CharacterDetailsResponseDTO> getAllCharacterDetails(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource
     ) {
         return characterDetailsService.getAllCharacterDetails(dataSource);
     }
@@ -31,7 +32,7 @@ public class CharacterDetailsController {
     @GetMapping("/{characterId}")
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
     public CharacterDetailsResponseDTO getCharacterDetailsByCharacterId(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer characterId
     ) {
         return characterDetailsService.getCharacterDetailsByCharacterId(dataSource, characterId);
@@ -40,7 +41,7 @@ public class CharacterDetailsController {
     @PutMapping("/{characterId}")
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#characterId, authentication)")
     public CharacterDetailsResponseDTO updateCharacterDetails(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) String dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable Integer characterId,
             @RequestBody UpdateCharacterDetailsRequestDTO request
     ) {

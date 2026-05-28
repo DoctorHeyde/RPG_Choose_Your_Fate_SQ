@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.model.mysql.Account;
+import dk.ek.gruppe2.chooseyourfate.repository.neo4j.AccountNodeRepository.AccountSnapshot;
 
 import java.util.Collection;
 import java.util.List;

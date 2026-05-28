@@ -2,6 +2,7 @@ package dk.ek.gruppe2.chooseyourfate.controller;
 
 import java.util.List;
 
+import dk.ek.gruppe2.chooseyourfate.dto.scene.SceneLookaheadResponseDTO;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,15 +34,15 @@ public class SceneController {
 
     @GetMapping
     public List<SceneResponseDTO> getAllscenes(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource
     ) {
         return sceneService.getAllScenes(dataSource);
     }
 
     @GetMapping("/{id}")
     public SceneResponseDTO getsceneById(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
-            @PathVariable Integer id
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
+            @PathVariable String id
     ) {
         return sceneService.getSceneById(dataSource, id);
     }
@@ -49,7 +50,7 @@ public class SceneController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public SceneResponseDTO createscene(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @RequestBody CreateSceneRequestDTO request
     ) {
         return sceneService.createScene(dataSource, request);
@@ -58,8 +59,8 @@ public class SceneController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public SceneResponseDTO updatescene(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
-            @PathVariable Integer id,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
+            @PathVariable String id,
             @RequestBody UpdateSceneRequestDTO request
     ) {
         return sceneService.updateScene(dataSource, id, request);
@@ -68,9 +69,18 @@ public class SceneController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public void deletescene(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
-            @PathVariable Integer id
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
+            @PathVariable String id
     ) {
         sceneService.deleteScene(dataSource, id);
     }
+
+    @GetMapping("/{id}/lookahead")
+    public SceneLookaheadResponseDTO getSceneLookahead(
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
+            @PathVariable String id
+    ) {
+        return sceneService.getSceneLookahead(dataSource, id);
+    }
+
 }

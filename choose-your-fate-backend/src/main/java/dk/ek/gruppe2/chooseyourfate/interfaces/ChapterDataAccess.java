@@ -1,7 +1,6 @@
 package dk.ek.gruppe2.chooseyourfate.interfaces;
 
 import java.util.List;
-import java.util.Optional;
 
 import dk.ek.gruppe2.chooseyourfate.dto.chapter.ChapterResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.chapter.CreateChapterRequestDTO;

@@ -1,6 +1,7 @@
 package dk.ek.gruppe2.chooseyourfate.controller;
 
 import dk.ek.gruppe2.chooseyourfate.dto.CharacterResponseDTO;
+import dk.ek.gruppe2.chooseyourfate.dto.CharacterViewResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.CreateCharacterRequestDTO;
 import dk.ek.gruppe2.chooseyourfate.enums.DataSourceType;
 import dk.ek.gruppe2.chooseyourfate.service.CharacterService;
@@ -28,7 +29,7 @@ public class CharacterController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<CharacterResponseDTO> getAllCharacters(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource
     ) {
         return characterService.getAllCharacters(dataSource);
     }
@@ -36,17 +37,27 @@ public class CharacterController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#id, authentication)")
     public CharacterResponseDTO getCharacterById(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable String id
     ) {
         
         return characterService.getCharacterById(dataSource, id);
     }
 
+    // Returns the character screen view with character, chapter, race, stats, and creation-limit info together.
+    @GetMapping("/{id}/view")
+    @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#id, authentication)")
+    public CharacterViewResponseDTO getCharacterViewById(
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
+            @PathVariable Integer id
+    ) {
+        return characterService.getCharacterViewById(dataSource, id);
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or @accountAuthorizationService.canModifyAccount(#request.accountId, authentication)")
     public CharacterResponseDTO createCharacter(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @RequestBody CreateCharacterRequestDTO request
     ) {
         return characterService.createCharacter(dataSource, request);
@@ -55,7 +66,7 @@ public class CharacterController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @characterAuthorizationService.canAccessCharacter(#id, authentication)")
     public void deleteCharacter(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             @PathVariable String id
     ) {
         characterService.deleteCharacter(dataSource, id);
@@ -63,7 +74,7 @@ public class CharacterController {
     
     @GetMapping("/all")
     public List<CharacterResponseDTO> getCharactersByAccountId(
-            @RequestHeader(value = DATA_SOURCE_HEADER, required = false) DataSourceType dataSource,
+            @RequestHeader(value = DATA_SOURCE_HEADER, required = true) DataSourceType dataSource,
             Authentication auth
     ) {
         Map<String, Object> extraInfo =  (Map<String, Object>) auth.getDetails(); 
