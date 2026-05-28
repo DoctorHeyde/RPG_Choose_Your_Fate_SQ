@@ -1,6 +1,5 @@
-package dk.ek.gruppe2.chooseyourfatebackend;
+package dk.ek.gruppe2.chooseyourfate;
 
-import dk.ek.gruppe2.chooseyourfate.ChooseYourFateBackendApplication;
 import org.springframework.boot.SpringApplication;
 
 public class TestChooseYourFateBackendApplication {

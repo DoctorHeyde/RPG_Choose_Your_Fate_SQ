@@ -1,4 +1,4 @@
-package dk.ek.gruppe2.chooseyourfatebackend.unit;
+package dk.ek.gruppe2.chooseyourfate.unit;
 
 import dk.ek.gruppe2.chooseyourfate.dto.InventoryHasItemResponseDTO;
 import dk.ek.gruppe2.chooseyourfate.dto.InventoryResponseDTO;
