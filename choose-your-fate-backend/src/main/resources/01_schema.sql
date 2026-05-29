@@ -414,6 +414,438 @@ CREATE  OR REPLACE VIEW `v_character` AS (
         );
 
 
+-- Procedures
+
+DROP PROCEDURE IF EXISTS `sp_create_character`;
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_create_character`(
+IN p_account_id INT,
+IN p_chapter_id INT,
+IN p_scene_id INT,
+IN p_race_detail_id INT,
+IN p_name varchar(50),
+OUT p_character_id INT
+)
+BEGIN
+DECLARE v_character_count INT;
+DECLARE v_character_limit INT;
+DECLARE v_scene_chapter_id INT;
+
+SELECT character_limit INTO v_character_limit
+FROM account WHERE id = p_account_id;
+
+SELECT COUNT(id) INTO v_character_count
+FROM `character_avatar` WHERE account_id = p_account_id;
+
+SELECT chapter_id INTO v_scene_chapter_id
+FROM scene
+WHERE id = p_scene_id;
+
+IF v_scene_chapter_id IS NULL THEN
+	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'Selected scene does not exist.';
+END IF;
+
+IF v_scene_chapter_id != p_chapter_id THEN
+	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'Selected scene does not belong to the selected chapter.';
+END IF;
+
+IF v_character_count < v_character_limit THEN
+	INSERT INTO `character_avatar` (account_id, chapter_id, scene_id, race_detail_id, name, flag)
+    VALUES (p_account_id, p_chapter_id, p_scene_id, p_race_detail_id, p_name, JSON_OBJECT());
+    SET p_character_id = LAST_INSERT_ID();
+ELSE
+	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'Character limit reached.';
+END IF;
+
+END;
+
+DROP PROCEDURE IF EXISTS `sp_delete_character`;
+CREATE PROCEDURE `sp_delete_character`(IN p_character_id INT)
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		ROLLBACK;
+        RESIGNAL;
+	END;
+    START TRANSACTION;
+		DELETE FROM character_has_quest WHERE character_id = p_character_id;
+        
+		DELETE FROM character_path_choice WHERE character_path_id IN (
+			SELECT id FROM character_path WHERE character_path.character_id = p_character_id);
+		
+        DELETE FROM inventory_has_item WHERE inventory_id IN (
+			SELECT id FROM inventory WHERE inventory.character_id = p_character_id);
+			
+        DELETE FROM character_path WHERE character_id = p_character_id;
+        
+        DELETE FROM inventory WHERE character_id = p_character_id;
+        
+        DELETE FROM character_details WHERE character_id = p_character_id;
+        
+        DELETE FROM equipment WHERE character_id = p_character_id;
+        
+        DELETE FROM `character_avatar` WHERE id = p_character_id;
+    COMMIT;
+END;
+
+DROP PROCEDURE IF EXISTS `sp_make_choice`;
+CREATE PROCEDURE `sp_make_choice`(IN p_character_id INT, IN p_choice_id INT)
+BEGIN
+    DECLARE v_character_scene_id INT;
+    DECLARE v_choice_scene_id INT;
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		ROLLBACK;
+        RESIGNAL;
+	END;
+    START TRANSACTION;
+    
+    SELECT scene_id INTO v_character_scene_id FROM `character_avatar` WHERE `character_avatar`.id = p_character_id;
+    SELECT scene_id INTO v_choice_scene_id FROM choice WHERE id = p_choice_id;
+    
+    IF v_character_scene_id != v_choice_scene_id THEN
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = 'Character is not in the correct scene for this choice.';
+	END IF;	
+    
+    INSERT INTO character_path_choice (character_path_id, choice_id)
+    VALUES (
+		(SELECT id FROM character_path WHERE character_id = p_character_id),
+        p_choice_id
+    );
+    
+    UPDATE `character_avatar`
+    SET
+        scene_id = (SELECT destination_scene_id FROM choice WHERE id = p_choice_id),
+        chapter_id = (
+            SELECT s.chapter_id
+            FROM scene s
+            JOIN choice c ON c.destination_scene_id = s.id
+            WHERE c.id = p_choice_id
+        )
+    WHERE id = p_character_id;
+    
+    COMMIT;
+END;
+
+DROP PROCEDURE IF EXISTS `sp_grant_quest_rewards`;
+CREATE PROCEDURE `sp_grant_quest_rewards`(
+IN p_character_id INT,
+IN p_quest_id INT)
+BEGIN
+INSERT INTO inventory_has_item (item_id, inventory_id, amount)
+	SELECT quest_has_item.item_id, inventory.id, 1 FROM quest_has_item
+    INNER JOIN inventory ON inventory.character_id = p_character_id
+    WHERE quest_has_item.quest_id = p_quest_id
+ON DUPLICATE KEY UPDATE amount = amount + 1;
+END;
+
+
+-- functions
+
+DROP FUNCTION IF EXISTS `fn_is_quest_complete`;
+CREATE FUNCTION `fn_is_quest_complete`(p_character_id INT, p_quest_id INT) RETURNS tinyint(1)
+    DETERMINISTIC
+BEGIN
+DECLARE v_quest_status BOOLEAN;
+SELECT `status` INTO v_quest_status 
+FROM character_has_quest WHERE p_character_id = character_id AND p_quest_id = quest_id;
+RETURN v_quest_status;
+END;
+
+DROP FUNCTION IF EXISTS `fn_has_required_item`;
+CREATE FUNCTION `fn_has_required_item`(p_character_id INT, p_item_id INT) RETURNS tinyint(1)
+    DETERMINISTIC
+BEGIN
+DECLARE v_character_has_item BOOLEAN;
+SELECT EXISTS (
+	SELECT 1 FROM inventory_has_item
+	INNER JOIN inventory on inventory.id = inventory_has_item.inventory_id
+	WHERE inventory.character_id = p_character_id AND inventory_has_item.item_id = p_item_id
+    ) INTO v_character_has_item;
+RETURN v_character_has_item;
+END;
+
+
+-- triggers
+
+DROP TRIGGER IF EXISTS `grant_rewards_after_quest_completion`;
+CREATE TRIGGER `grant_rewards_after_quest_completion` AFTER UPDATE ON `character_has_quest` FOR EACH ROW 
+BEGIN
+IF NEW.status = 1 THEN
+	CALL sp_grant_quest_rewards(NEW.character_id, NEW.quest_id);
+END IF;
+END;
+
+DROP TRIGGER IF EXISTS `audit_account_after_insert`;
+CREATE TRIGGER `audit_account_after_insert` AFTER INSERT ON `account` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, new_data)
+VALUES (
+    'account',
+    NEW.id,
+    'INSERT',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', NEW.id,
+        'username', NEW.username,
+        'character_limit', NEW.character_limit,
+        'email', NEW.email,
+        'role', NEW.role
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_account_after_update`;
+CREATE TRIGGER `audit_account_after_update` AFTER UPDATE ON `account` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data, new_data)
+VALUES (
+    'account',
+    NEW.id,
+    'UPDATE',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', OLD.id,
+        'username', OLD.username,
+        'character_limit', OLD.character_limit,
+        'email', OLD.email,
+        'role', OLD.role
+    ),
+    JSON_OBJECT(
+        'id', NEW.id,
+        'username', NEW.username,
+        'character_limit', NEW.character_limit,
+        'email', NEW.email,
+        'role', NEW.role
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_account_after_delete`;
+CREATE TRIGGER `audit_account_after_delete` AFTER DELETE ON `account` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data)
+VALUES (
+    'account',
+    OLD.id,
+    'DELETE',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', OLD.id,
+        'username', OLD.username,
+        'character_limit', OLD.character_limit,
+        'email', OLD.email,
+        'role', OLD.role
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_character_avatar_after_insert`;
+CREATE TRIGGER `audit_character_avatar_after_insert` AFTER INSERT ON `character_avatar` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, new_data)
+VALUES (
+    'character_avatar',
+    NEW.id,
+    'INSERT',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', NEW.id,
+        'account_id', NEW.account_id,
+        'chapter_id', NEW.chapter_id,
+        'scene_id', NEW.scene_id,
+        'race_detail_id', NEW.race_detail_id,
+        'name', NEW.name,
+        'flag', NEW.flag
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_character_avatar_after_update`;
+CREATE TRIGGER `audit_character_avatar_after_update` AFTER UPDATE ON `character_avatar` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data, new_data)
+VALUES (
+    'character_avatar',
+    NEW.id,
+    'UPDATE',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', OLD.id,
+        'account_id', OLD.account_id,
+        'chapter_id', OLD.chapter_id,
+        'scene_id', OLD.scene_id,
+        'race_detail_id', OLD.race_detail_id,
+        'name', OLD.name,
+        'flag', OLD.flag
+    ),
+    JSON_OBJECT(
+        'id', NEW.id,
+        'account_id', NEW.account_id,
+        'chapter_id', NEW.chapter_id,
+        'scene_id', NEW.scene_id,
+        'race_detail_id', NEW.race_detail_id,
+        'name', NEW.name,
+        'flag', NEW.flag
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_character_avatar_after_delete`;
+CREATE TRIGGER `audit_character_avatar_after_delete` AFTER DELETE ON `character_avatar` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data)
+VALUES (
+    'character_avatar',
+    OLD.id,
+    'DELETE',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', OLD.id,
+        'account_id', OLD.account_id,
+        'chapter_id', OLD.chapter_id,
+        'scene_id', OLD.scene_id,
+        'race_detail_id', OLD.race_detail_id,
+        'name', OLD.name,
+        'flag', OLD.flag
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_chapter_after_insert`;
+CREATE TRIGGER `audit_chapter_after_insert` AFTER INSERT ON `chapter` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, new_data)
+VALUES (
+    'chapter',
+    NEW.id,
+    'INSERT',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', NEW.id,
+        'name', NEW.name,
+        'starting_scene_id', NEW.starting_scene_id
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_chapter_after_update`;
+CREATE TRIGGER `audit_chapter_after_update` AFTER UPDATE ON `chapter` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data, new_data)
+VALUES (
+    'chapter',
+    NEW.id,
+    'UPDATE',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', OLD.id,
+        'name', OLD.name,
+        'starting_scene_id', OLD.starting_scene_id
+    ),
+    JSON_OBJECT(
+        'id', NEW.id,
+        'name', NEW.name,
+        'starting_scene_id', NEW.starting_scene_id
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_chapter_after_delete`;
+CREATE TRIGGER `audit_chapter_after_delete` AFTER DELETE ON `chapter` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data)
+VALUES (
+    'chapter',
+    OLD.id,
+    'DELETE',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', OLD.id,
+        'name', OLD.name,
+        'starting_scene_id', OLD.starting_scene_id
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_scene_after_insert`;
+CREATE TRIGGER `audit_scene_after_insert` AFTER INSERT ON `scene` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, new_data)
+VALUES (
+    'scene',
+    NEW.id,
+    'INSERT',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', NEW.id,
+        'chapter_id', NEW.chapter_id,
+        'name', NEW.name
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_scene_after_update`;
+CREATE TRIGGER `audit_scene_after_update` AFTER UPDATE ON `scene` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data, new_data)
+VALUES (
+    'scene',
+    NEW.id,
+    'UPDATE',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', OLD.id,
+        'chapter_id', OLD.chapter_id,
+        'name', OLD.name
+    ),
+    JSON_OBJECT(
+        'id', NEW.id,
+        'chapter_id', NEW.chapter_id,
+        'name', NEW.name
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `audit_scene_after_delete`;
+CREATE TRIGGER `audit_scene_after_delete` AFTER DELETE ON `scene` FOR EACH ROW
+BEGIN
+INSERT INTO audit_log (table_name, entity_id, action_type, database_user, old_data)
+VALUES (
+    'scene',
+    OLD.id,
+    'DELETE',
+    CURRENT_USER(),
+    JSON_OBJECT(
+        'id', OLD.id,
+        'chapter_id', OLD.chapter_id,
+        'name', OLD.name
+    )
+);
+END;
+
+DROP TRIGGER IF EXISTS `create_character_related_tables`;
+CREATE TRIGGER `create_character_related_tables` AFTER INSERT ON `character_avatar` FOR EACH ROW
+BEGIN
+INSERT INTO inventory (character_id)
+VALUES (NEW.id);
+
+INSERT INTO equipment (character_id)
+VALUES (NEW.id);
+
+INSERT INTO character_details (character_id, intelligence, charisma, fashion)
+VALUES (NEW.id, 5, 5, 5);
+
+INSERT INTO character_path (character_id)
+VALUES (NEW.id);
+
+END;
+
+
+
 DELETE FROM character_path_choice;
 DELETE FROM character_has_quest;
 DELETE FROM inventory_has_item;
@@ -522,15 +954,6 @@ INSERT INTO character_avatar (id, account_id, chapter_id, scene_id, race_detail_
     (2, 2, 1, 1, 2, 'Torben', '{"reputation":{"market":0},"statusEffects":[],"storyFlags":["watchtower-visited"]}'),
     (3, 3, 5, 5, 3, 'Mira', '{"reputation":{"archive":2},"statusEffects":[],"storyFlags":["shrine-open"]}');
 
-INSERT INTO inventory (id, character_id) VALUES
-    (1, 1),
-    (2, 2),
-    (3, 3);
-
-INSERT INTO equipment (character_id, head, legs, chest) VALUES 
-    (1, null, null, null),
-    (2, null, null, null),
-    (3, null, null, null);
 
 UPDATE character_details
 SET intelligence = 7, charisma = 6, fashion = 5
@@ -575,16 +998,6 @@ UPDATE character_has_quest
 SET status = 1
 WHERE character_id = 3 AND quest_id = 3;
 
-INSERT INTO inventory_has_item (item_id, inventory_id, amount) VALUES
-    (1, 1, 1),
-    (5, 1, 2),
-    (2, 2, 1),
-    (3, 3, 1),
-    (4, 3, 1),
-    (8, 3, 1),
-    (9, 3, 1),
-    (10, 3, 1)
-ON DUPLICATE KEY UPDATE amount = VALUES(amount);
 
 UPDATE equipment
 SET head = 2, chest = 3, legs = 4
@@ -609,6 +1022,650 @@ WHERE id = 4;
 UPDATE chapter
 SET starting_scene_id = 5
 WHERE id = 5;
+
+CALL sp_make_choice(1, 1);
+CALL sp_make_choice(1, 3);
+CALL sp_make_choice(2, 2);
+
+-- Supplemental mock data seed.
+-- Assumes 05_seed_data.sql has already been executed and extends the dataset to 100 rows
+-- for the core tables while keeping the data connected and reasonably realistic.
+
+DROP TEMPORARY TABLE IF EXISTS tmp_seq_100;
+CREATE TEMPORARY TABLE tmp_seq_100 (
+    n INT NOT NULL PRIMARY KEY
+);
+
+INSERT INTO tmp_seq_100 (n)
+WITH RECURSIVE seq AS (
+    SELECT 1 AS n
+    UNION ALL
+    SELECT n + 1
+    FROM seq
+    WHERE n < 100
+)
+SELECT n
+FROM seq;
+
+-- ---------------------------------------------------------------------------
+-- Accounts (4 existing -> add 96)
+-- ---------------------------------------------------------------------------
+INSERT INTO account (id, username, character_limit, email, password, role)
+SELECT
+    n,
+    CONCAT('user', LPAD(n, 3, '0')),
+    3 + MOD(n, 3),
+    CONCAT('user', LPAD(n, 3, '0'), '@chooseyourfate.dk'),
+    '$2b$10$Ruvc2k.FR5tK3GDvs2wU5OuIxZ/MBpvdCt.yPyYcQ9IQ5VVMX/08C',
+    CASE
+        WHEN MOD(n, 25) = 0 THEN 'ROLE_ADMIN'
+        ELSE 'ROLE_USER'
+    END
+FROM tmp_seq_100
+WHERE n BETWEEN 5 AND 100;
+
+-- ---------------------------------------------------------------------------
+-- Chapters (5 existing -> add 95)
+-- ---------------------------------------------------------------------------
+INSERT INTO chapter (id, name, starting_scene_id)
+SELECT
+    n,
+    CONCAT(
+        ELT(MOD(n - 1, 8) + 1,
+            'Ashen', 'Moonlit', 'Verdant', 'Ivory',
+            'Crimson', 'Storm', 'Ember', 'Silver'
+        ),
+        ' Chapter ',
+        LPAD(n, 3, '0')
+    ),
+    NULL
+FROM tmp_seq_100
+WHERE n BETWEEN 6 AND 100;
+
+-- ---------------------------------------------------------------------------
+-- Race details (5 existing -> add 95)
+-- ---------------------------------------------------------------------------
+INSERT INTO race_details (id, name, starting_chapter_id)
+SELECT
+    n,
+    CONCAT(
+        ELT(MOD(n - 1, 6) + 1,
+            'Highland', 'Riverborn', 'Duskwind',
+            'Sunforge', 'Mistfolk', 'Starling'
+        ),
+        ' lineage ',
+        LPAD(n, 3, '0')
+    ),
+    n
+FROM tmp_seq_100
+WHERE n BETWEEN 6 AND 100;
+
+-- ---------------------------------------------------------------------------
+-- Scenes (5 existing -> add 95)
+-- ---------------------------------------------------------------------------
+INSERT INTO scene (id, chapter_id, name)
+SELECT
+    n,
+    n,
+    CONCAT(
+        ELT(MOD(n - 1, 8) + 1,
+            'Outer Gate', 'Lantern Market', 'North Tower', 'Moss Trail',
+            'Shrine Court', 'Dockside Alley', 'Hidden Archive', 'Hill Camp'
+        ),
+        ' ',
+        LPAD(n, 3, '0')
+    )
+FROM tmp_seq_100
+WHERE n BETWEEN 6 AND 100;
+
+UPDATE chapter
+SET starting_scene_id = id
+WHERE id BETWEEN 6 AND 100;
+
+-- ---------------------------------------------------------------------------
+-- Items (10 existing -> add 90)
+-- Cycle: head, chest, legs, weapon, consumable, quest
+-- ---------------------------------------------------------------------------
+INSERT INTO item (id, name, description, type)
+SELECT
+    n,
+    CASE MOD(n - 11, 6)
+        WHEN 0 THEN CONCAT('Sentinel Helm ', LPAD(n, 3, '0'))
+        WHEN 1 THEN CONCAT('Brigandine Vest ', LPAD(n, 3, '0'))
+        WHEN 2 THEN CONCAT('Trail Greaves ', LPAD(n, 3, '0'))
+        WHEN 3 THEN CONCAT('Wayfarer Blade ', LPAD(n, 3, '0'))
+        WHEN 4 THEN CONCAT('Tonic Flask ', LPAD(n, 3, '0'))
+        ELSE CONCAT('Seal Fragment ', LPAD(n, 3, '0'))
+    END,
+    CASE MOD(n - 11, 6)
+        WHEN 0 THEN 'A reinforced helmet issued to city sentries on remote patrol routes.'
+        WHEN 1 THEN 'Layered chest armor built for couriers and scouts moving between districts.'
+        WHEN 2 THEN 'Reliable leg protection worn by marsh guides and shrine wardens.'
+        WHEN 3 THEN 'A serviceable blade balanced for travelers expecting trouble on the road.'
+        WHEN 4 THEN 'A restorative tonic brewed for long patrols and harsh weather.'
+        ELSE 'A stamped fragment used to prove passage, rank, or ritual clearance.'
+    END,
+    CASE MOD(n - 11, 6)
+        WHEN 0 THEN 'armor_head'
+        WHEN 1 THEN 'armor_chest'
+        WHEN 2 THEN 'armor_legs'
+        WHEN 3 THEN 'weapon'
+        WHEN 4 THEN 'consumable'
+        ELSE 'quest'
+    END
+FROM tmp_seq_100
+WHERE n BETWEEN 11 AND 100;
+
+-- ---------------------------------------------------------------------------
+-- NPCs (3 existing -> add 97)
+-- ---------------------------------------------------------------------------
+INSERT INTO npc (id, name, race_details_id)
+SELECT
+    n,
+    CONCAT(
+        ELT(MOD(n - 1, 8) + 1,
+            'Captain', 'Merchant', 'Archivist', 'Scout',
+            'Caretaker', 'Hunter', 'Guide', 'Warden'
+        ),
+        ' ',
+        ELT(MOD(n - 1, 10) + 1,
+            'Rowan', 'Selene', 'Bram', 'Iris', 'Tovin',
+            'Nyra', 'Cael', 'Mira', 'Sorrel', 'Varr'
+        ),
+        ' ',
+        LPAD(n, 3, '0')
+    ),
+    n
+FROM tmp_seq_100
+WHERE n BETWEEN 4 AND 100;
+
+INSERT INTO scene_has_npc (scene_id, npc_id)
+SELECT
+    n,
+    n
+FROM tmp_seq_100
+WHERE n BETWEEN 4 AND 100;
+
+-- ---------------------------------------------------------------------------
+-- Quests (3 existing -> add 97)
+-- ---------------------------------------------------------------------------
+INSERT INTO quest (id, scene_id, description)
+SELECT
+    n,
+    n,
+    CONCAT(
+        'Support the locals in scene ',
+        LPAD(n, 3, '0'),
+        ' by securing a clue, completing a delivery, or exposing a nearby threat.'
+    )
+FROM tmp_seq_100
+WHERE n BETWEEN 4 AND 100;
+
+INSERT INTO quest_has_item (quest_id, item_id)
+SELECT
+    n,
+    11 + MOD(n - 4, 90)
+FROM tmp_seq_100
+WHERE n BETWEEN 4 AND 100;
+
+-- ---------------------------------------------------------------------------
+-- Choices (6 existing -> add 94)
+-- Scene coverage becomes 1..98, which gives every generated character a valid first choice.
+-- ---------------------------------------------------------------------------
+INSERT INTO choice (
+    id,
+    scene_id,
+    destination_scene_id,
+    description,
+    consequence,
+    target_id,
+    value_int,
+    story_weight,
+    requirements
+)
+SELECT
+    n,
+    n - 2,
+    n - 1,
+    CASE MOD(n - 7, 5)
+        WHEN 0 THEN CONCAT('Press onward from scene ', LPAD(n - 2, 3, '0'), ' and follow the clearest road toward the next district.')
+        WHEN 1 THEN CONCAT('Speak with the local authority in scene ', LPAD(n - 2, 3, '0'), ' and accept a structured task.')
+        WHEN 2 THEN CONCAT('Search the area around scene ', LPAD(n - 2, 3, '0'), ' for tactical advantages before moving on.')
+        WHEN 3 THEN CONCAT('Take the risky shortcut out of scene ', LPAD(n - 2, 3, '0'), ' to save time at a personal cost.')
+        ELSE CONCAT('Use what you have learned in scene ', LPAD(n - 2, 3, '0'), ' to close out the current objective.')
+    END,
+    CASE MOD(n - 7, 5)
+        WHEN 0 THEN 'travel'
+        WHEN 1 THEN 'gain_quest'
+        WHEN 2 THEN 'gain_stat'
+        WHEN 3 THEN 'lose_hp'
+        ELSE 'complete_quest'
+    END,
+    CASE MOD(n - 7, 5)
+        WHEN 1 THEN n - 2
+        WHEN 4 THEN n - 2
+        ELSE NULL
+    END,
+    CASE MOD(n - 7, 5)
+        WHEN 0 THEN 0
+        WHEN 1 THEN 1
+        WHEN 2 THEN 2
+        WHEN 3 THEN -1
+        ELSE 1
+    END,
+    4 + MOD(n, 7),
+    CASE MOD(n - 7, 5)
+        WHEN 0 THEN JSON_OBJECT('requires', JSON_ARRAY(), 'grants', JSON_ARRAY(CONCAT('road-', LPAD(n - 1, 3, '0'))))
+        WHEN 1 THEN JSON_OBJECT('requires', JSON_ARRAY(), 'grants', JSON_ARRAY(CONCAT('quest-', LPAD(n - 2, 3, '0'))))
+        WHEN 2 THEN JSON_OBJECT('requires', JSON_ARRAY(), 'grants', JSON_ARRAY('prepared'))
+        WHEN 3 THEN JSON_OBJECT('requires', JSON_ARRAY('prepared'), 'grants', JSON_ARRAY('bruised'))
+        ELSE JSON_OBJECT('requires', JSON_ARRAY(CONCAT('quest-', LPAD(n - 2, 3, '0'))), 'grants', JSON_ARRAY('resolved'))
+    END
+FROM tmp_seq_100
+WHERE n BETWEEN 7 AND 100;
+
+INSERT INTO choice_has_item (choice_id, item_id)
+SELECT
+    seeded.choice_id,
+    seeded.item_id
+FROM (
+    SELECT 1 AS choice_id, 7 AS item_id
+    UNION ALL SELECT 2, 5
+    UNION ALL SELECT 4, 5
+    UNION ALL SELECT 6, 7
+    UNION ALL
+    SELECT n, 11 + MOD(n - 7, 90)
+    FROM tmp_seq_100
+    WHERE n BETWEEN 7 AND 100
+) AS seeded;
+
+-- ---------------------------------------------------------------------------
+-- Characters (3 existing -> add 97)
+-- Trigger auto-creates inventory, equipment, character_details and character_path.
+-- Every generated character starts in a scene that has at least one choice.
+-- ---------------------------------------------------------------------------
+INSERT INTO character_avatar (
+    id,
+    account_id,
+    chapter_id,
+    scene_id,
+    race_detail_id,
+    name,
+    flag
+)
+SELECT
+    n,
+    n,
+    ((n - 4) % 98) + 1,
+    ((n - 4) % 98) + 1,
+    ((n - 4) % 100) + 1,
+    CONCAT(
+        ELT(MOD(n - 1, 10) + 1,
+            'Aela', 'Borin', 'Cira', 'Dain', 'Eris',
+            'Fenn', 'Galen', 'Hana', 'Ivor', 'Jora'
+        ),
+        ' ',
+        ELT(MOD(n + 2, 10) + 1,
+            'Ash', 'Vale', 'Thorn', 'Kestrel', 'Rune',
+            'Morrow', 'Pike', 'Dawn', 'Frost', 'Quill'
+        ),
+        ' ',
+        LPAD(n, 3, '0')
+    ),
+    JSON_OBJECT(
+        'reputation', JSON_OBJECT(
+            'guard', MOD(n, 5) - 2,
+            'market', MOD(n + 1, 5) - 2,
+            'archive', MOD(n + 2, 5) - 2
+        ),
+        'statusEffects', JSON_ARRAY(),
+        'storyFlags', JSON_ARRAY(CONCAT('origin-', LPAD(((n - 4) % 98) + 1, 3, '0')))
+    )
+FROM tmp_seq_100
+WHERE n BETWEEN 4 AND 100;
+
+UPDATE character_details cd
+JOIN character_avatar ca ON ca.id = cd.character_id
+SET
+    cd.intelligence = 3 + MOD(ca.id, 8),
+    cd.charisma = 3 + MOD(ca.id + 2, 8),
+    cd.fashion = 3 + MOD(ca.id + 4, 8)
+WHERE ca.id BETWEEN 4 AND 100;
+
+UPDATE equipment e
+SET
+    e.head = CASE
+        WHEN MOD(e.character_id, 3) = 0 THEN NULL
+        ELSE 11 + (6 * MOD(e.character_id - 4, 15))
+    END,
+    e.chest = CASE
+        WHEN MOD(e.character_id, 4) = 0 THEN NULL
+        ELSE 12 + (6 * MOD(e.character_id - 4, 15))
+    END,
+    e.legs = CASE
+        WHEN MOD(e.character_id, 5) = 0 THEN NULL
+        ELSE 13 + (6 * MOD(e.character_id - 4, 15))
+    END
+WHERE e.character_id BETWEEN 4 AND 100;
+
+INSERT INTO character_has_quest (character_id, quest_id, status)
+SELECT
+    n,
+    n,
+    CASE
+        WHEN MOD(n, 4) = 0 THEN 1
+        ELSE 0
+    END
+FROM tmp_seq_100
+WHERE n BETWEEN 4 AND 98;
+
+INSERT INTO inventory_has_item (item_id, inventory_id, amount)
+SELECT
+    11 + MOD(i.character_id - 4, 90),
+    i.id,
+    1 + MOD(i.character_id, 3)
+FROM inventory i
+WHERE i.character_id BETWEEN 4 AND 95;
+
+INSERT INTO character_path_choice (character_path_id, choice_id)
+SELECT
+    cp.id,
+    scene_choices.choice_id
+FROM character_path cp
+JOIN character_avatar ca
+    ON ca.id = cp.character_id
+JOIN (
+    SELECT scene_id, MIN(id) AS choice_id
+    FROM choice
+    GROUP BY scene_id
+) AS scene_choices
+    ON scene_choices.scene_id = ca.scene_id
+WHERE ca.id BETWEEN 4 AND 100;
+
+UPDATE character_avatar ca
+JOIN character_path cp
+    ON cp.character_id = ca.id
+JOIN character_path_choice cpc
+    ON cpc.character_path_id = cp.id
+JOIN choice ch
+    ON ch.id = cpc.choice_id
+JOIN scene dest
+    ON dest.id = ch.destination_scene_id
+SET
+    ca.scene_id = dest.id,
+    ca.chapter_id = dest.chapter_id
+WHERE ca.id BETWEEN 4 AND 100;
+
+UPDATE character_path cp
+JOIN character_avatar ca
+    ON ca.id = cp.character_id
+SET cp.summary = CONCAT(
+    ca.name,
+    ' has already moved beyond their starting point and is currently navigating scene ',
+    LPAD(ca.scene_id, 3, '0'),
+    ' while balancing faction ties and personal survival.'
+)
+WHERE ca.id BETWEEN 4 AND 100;
+
+DROP TEMPORARY TABLE IF EXISTS tmp_seq_100;
+
+
+-- Expands the narrative part of the dataset so chapters can contain multiple scenes
+-- and scenes can branch through several choices. Intended to run after:
+-- 01_create_schema.sql
+-- 02_procedures.sql
+-- 03_functions.sql
+-- 04_triggers.sql
+-- 05_seed_data.sql
+-- 06_seed_mock_data.sql
+
+DROP TEMPORARY TABLE IF EXISTS tmp_extra_scene_seq;
+CREATE TEMPORARY TABLE tmp_extra_scene_seq (
+    seq INT NOT NULL PRIMARY KEY
+);
+
+INSERT INTO tmp_extra_scene_seq (seq)
+WITH RECURSIVE seq_gen AS (
+    SELECT 1 AS seq
+    UNION ALL
+    SELECT seq + 1
+    FROM seq_gen
+    WHERE seq < 100
+)
+SELECT seq
+FROM seq_gen;
+
+DROP TEMPORARY TABLE IF EXISTS tmp_extra_scenes;
+CREATE TEMPORARY TABLE tmp_extra_scenes (
+    seq INT NOT NULL PRIMARY KEY,
+    scene_id INT NOT NULL,
+    chapter_id INT NOT NULL,
+    chapter_scene_no INT NOT NULL
+);
+
+INSERT INTO tmp_extra_scenes (seq, scene_id, chapter_id, chapter_scene_no)
+SELECT
+    seq,
+    100 + seq AS scene_id,
+    FLOOR((seq - 1) / 4) + 1 AS chapter_id,
+    MOD(seq - 1, 4) + 1 AS chapter_scene_no
+FROM tmp_extra_scene_seq;
+
+-- ---------------------------------------------------------------------------
+-- Add 100 extra scenes distributed across chapters 1-25 (4 extra scenes each).
+-- ---------------------------------------------------------------------------
+INSERT INTO scene (id, chapter_id, name)
+SELECT
+    scene_id,
+    chapter_id,
+    CONCAT(
+        'Chapter ',
+        LPAD(chapter_id, 3, '0'),
+        ' - ',
+        ELT(
+            chapter_scene_no,
+            'Approach Road',
+            'Central Square',
+            'Side Passage',
+            'Final Crossing'
+        )
+    )
+FROM tmp_extra_scenes;
+
+-- ---------------------------------------------------------------------------
+-- Add one extra quest per added scene.
+-- ---------------------------------------------------------------------------
+INSERT INTO quest (id, scene_id, description)
+SELECT
+    100 + seq,
+    scene_id,
+    CONCAT(
+        'Resolve the local conflict in scene ',
+        LPAD(scene_id, 3, '0'),
+        ' by gathering leverage, speaking to the right people, and choosing who to support.'
+    )
+FROM tmp_extra_scenes;
+
+INSERT INTO quest_has_item (quest_id, item_id)
+SELECT
+    100 + seq,
+    11 + MOD(seq - 1, 90)
+FROM tmp_extra_scenes;
+
+-- ---------------------------------------------------------------------------
+-- Add at least one NPC relation per added scene and a second one for half of them.
+-- ---------------------------------------------------------------------------
+INSERT INTO scene_has_npc (scene_id, npc_id)
+SELECT
+    scene_id,
+    1 + MOD(seq - 1, 100)
+FROM tmp_extra_scenes;
+
+INSERT INTO scene_has_npc (scene_id, npc_id)
+SELECT
+    scene_id,
+    1 + MOD(seq + 32, 100)
+FROM tmp_extra_scenes
+WHERE MOD(seq, 2) = 0;
+
+-- ---------------------------------------------------------------------------
+-- Add 3 choices per added scene:
+-- 1. Continue deeper into the same chapter flow.
+-- 2. Take on a local quest.
+-- 3. Take a risky shortcut.
+-- This adds 300 extra choices and gives scenes a more realistic branching shape.
+-- Split into multiple INSERT statements to avoid MySQL's temp-table reopen limitation.
+-- ---------------------------------------------------------------------------
+INSERT INTO choice (
+    id,
+    scene_id,
+    destination_scene_id,
+    description,
+    consequence,
+    target_id,
+    value_int,
+    story_weight,
+    requirements
+)
+SELECT
+    100 + ((seq - 1) * 3) + 1 AS id,
+    scene_id,
+    CASE
+        WHEN chapter_scene_no < 4 THEN scene_id + 1
+        ELSE chapter_id + 1
+    END AS destination_scene_id,
+    CONCAT(
+        'Push forward from ',
+        'scene ',
+        LPAD(scene_id, 3, '0'),
+        ' and stay on the most direct route through the district.'
+    ),
+    'travel',
+    NULL,
+    0,
+    7,
+    JSON_OBJECT(
+        'requires', JSON_ARRAY(),
+        'grants', JSON_ARRAY(CONCAT('route-', LPAD(scene_id, 3, '0')))
+    )
+FROM tmp_extra_scenes;
+
+INSERT INTO choice (
+    id,
+    scene_id,
+    destination_scene_id,
+    description,
+    consequence,
+    target_id,
+    value_int,
+    story_weight,
+    requirements
+)
+SELECT
+    100 + ((seq - 1) * 3) + 2 AS id,
+    scene_id,
+    CASE
+        WHEN chapter_scene_no = 1 THEN scene_id + 2
+        WHEN chapter_scene_no = 2 THEN scene_id + 1
+        WHEN chapter_scene_no = 3 THEN scene_id + 1
+        ELSE chapter_id + 1
+    END AS destination_scene_id,
+    CONCAT(
+        'Speak with the locals in scene ',
+        LPAD(scene_id, 3, '0'),
+        ' and take responsibility for the trouble unfolding there.'
+    ),
+    'gain_quest',
+    100 + seq,
+    1,
+    8,
+    JSON_OBJECT(
+        'requires', JSON_ARRAY(),
+        'grants', JSON_ARRAY(CONCAT('quest-', LPAD(100 + seq, 3, '0')))
+    )
+FROM tmp_extra_scenes;
+
+INSERT INTO choice (
+    id,
+    scene_id,
+    destination_scene_id,
+    description,
+    consequence,
+    target_id,
+    value_int,
+    story_weight,
+    requirements
+)
+SELECT
+    100 + ((seq - 1) * 3) + 3 AS id,
+    scene_id,
+    CASE
+        WHEN chapter_scene_no IN (1, 2) THEN scene_id + 2
+        WHEN chapter_scene_no = 3 THEN chapter_id + 1
+        ELSE LEAST(scene_id, 200)
+    END AS destination_scene_id,
+    CONCAT(
+        'Take a dangerous shortcut out of scene ',
+        LPAD(scene_id, 3, '0'),
+        ' and trade safety for speed.'
+    ),
+    CASE
+        WHEN MOD(seq, 3) = 0 THEN 'lose_hp'
+        WHEN MOD(seq, 3) = 1 THEN 'gain_stat'
+        ELSE 'complete_quest'
+    END,
+    CASE
+        WHEN MOD(seq, 3) = 2 THEN 100 + seq
+        ELSE NULL
+    END,
+    CASE
+        WHEN MOD(seq, 3) = 0 THEN -1
+        WHEN MOD(seq, 3) = 1 THEN 2
+        ELSE 1
+    END,
+    6,
+    JSON_OBJECT(
+        'requires', JSON_ARRAY(CONCAT('route-', LPAD(scene_id, 3, '0'))),
+        'grants', JSON_ARRAY(
+            CASE
+                WHEN MOD(seq, 3) = 0 THEN 'bruised'
+                WHEN MOD(seq, 3) = 1 THEN 'prepared'
+                ELSE 'resolved'
+            END
+        )
+    )
+FROM tmp_extra_scenes;
+
+-- ---------------------------------------------------------------------------
+-- Some choices explicitly reference items to keep item-driven branching visible.
+-- ---------------------------------------------------------------------------
+INSERT INTO choice_has_item (choice_id, item_id)
+SELECT
+    100 + ((seq - 1) * 3) + 2,
+    11 + MOD(seq - 1, 90)
+FROM tmp_extra_scenes
+WHERE MOD(seq, 2) = 1;
+
+INSERT INTO choice_has_item (choice_id, item_id)
+SELECT
+    100 + ((seq - 1) * 3) + 3,
+    11 + MOD(seq + 17, 90)
+FROM tmp_extra_scenes
+WHERE MOD(seq, 5) = 0;
+
+DROP TEMPORARY TABLE IF EXISTS tmp_extra_scenes;
+DROP TEMPORARY TABLE IF EXISTS tmp_extra_scene_seq;
+
+-- Spring security expects these exact values when using hasRole("USER") / hasRole("ADMIN").
+UPDATE account
+SET role = 'ROLE_USER'
+WHERE role IS NULL
+   OR role NOT IN ('ROLE_USER', 'ROLE_ADMIN');
+
+ALTER TABLE account
+    MODIFY role ENUM('ROLE_USER', 'ROLE_ADMIN') NOT NULL DEFAULT 'ROLE_USER';
+
+-- UPDATE account SET role = 'ROLE_ADMIN' WHERE username = 'your_admin_username';
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
