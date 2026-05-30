@@ -12,7 +12,7 @@ export default function Register() {
 
     const handleRegister = async () => {
       try {
-        await register(username, email, password);
+        const data = await register(username, email, password);
         
         navigate("/");
       } catch (err) {
