@@ -43,6 +43,7 @@ class SceneServiceIT {
     @Autowired
     private SceneRepository sceneRepository;
 
+    // Verifies that the service returns scenes loaded from the seeded database.
     @Test
     void getAllScenes_ShouldReturnSeededScenes() {
         // Act
@@ -58,6 +59,7 @@ class SceneServiceIT {
                 ));
     }
 
+    // Verifies that an existing scene can be fetched by id.
     @Test
     void getSceneById_ShouldReturnScene_WhenSceneExists() {
         // Arrange
@@ -74,6 +76,7 @@ class SceneServiceIT {
         );
     }
 
+    // Verifies that fetching an unknown scene id throws a not-found exception.
     @Test
     void getSceneById_ShouldThrowResourceNotFoundException_WhenSceneDoesNotExist() {
         // Arrange
@@ -85,6 +88,7 @@ class SceneServiceIT {
                 .hasMessageContaining("Scene not found with id: " + sceneId);
     }
 
+    // Verifies that fetching a scene with a null id is rejected.
     @Test
     void getSceneById_ShouldThrowResourceNotFoundException_WhenIdIsNull() {
         // Act + Assert
@@ -93,6 +97,7 @@ class SceneServiceIT {
                 .hasMessageContaining("Scene not found with id: null");
     }
 
+    // Verifies that lookahead returns a scene's choices and their destination scenes.
     @Test
     void getSceneLookahead_ShouldReturnChoicesAndDestinationScenes_WhenSceneHasChoices() {
         // Arrange
@@ -117,6 +122,7 @@ class SceneServiceIT {
         );
     }
 
+    // Verifies that lookahead for an unknown scene id throws a not-found exception.
     @Test
     void getSceneLookahead_ShouldThrowResourceNotFoundException_WhenSceneDoesNotExist() {
         // Arrange
@@ -128,6 +134,7 @@ class SceneServiceIT {
                 .hasMessageContaining("Scene not found with id: " + sceneId);
     }
 
+    // Verifies that lookahead with a null scene id is rejected.
     @Test
     void getSceneLookahead_ShouldThrowResourceNotFoundException_WhenIdIsNull() {
         // Act + Assert
@@ -136,6 +143,7 @@ class SceneServiceIT {
                 .hasMessageContaining("Scene not found with id: null");
     }
 
+    // Verifies that a scene is created and persisted when its chapter exists.
     @Test
     void createScene_ShouldPersistScene_WhenChapterExists() {
         // Arrange
@@ -156,6 +164,7 @@ class SceneServiceIT {
         );
     }
 
+    // Verifies that a scene cannot be created for an unknown chapter.
     @Test
     void createScene_ShouldThrowResourceNotFoundException_WhenChapterDoesNotExist() {
         // Arrange
@@ -169,6 +178,7 @@ class SceneServiceIT {
                 .hasMessageContaining("Chapter not found with id: " + request.getChapterId());
     }
 
+    // Verifies that a scene cannot be created without a chapter id.
     @Test
     void createScene_ShouldThrowInvalidDataAccessApiUsageException_WhenChapterIdIsNull() {
         // Arrange
@@ -180,6 +190,7 @@ class SceneServiceIT {
                 .hasMessageContaining("The given id must not be null");
     }
 
+    // Verifies that an existing scene's name and chapter can be updated.
     @Test
     void updateScene_ShouldPersistUpdatedNameAndChapter_WhenSceneAndChapterExist() {
         // Arrange
@@ -204,6 +215,7 @@ class SceneServiceIT {
         );
     }
 
+    // Verifies that an unknown scene cannot be updated.
     @Test
     void updateScene_ShouldThrowResourceNotFoundException_WhenSceneDoesNotExist() {
         // Arrange
@@ -218,6 +230,7 @@ class SceneServiceIT {
                 .hasMessageContaining("Scene not found with id: " + sceneId);
     }
 
+    // Verifies that updating a scene with a null scene id is rejected.
     @Test
     void updateScene_ShouldThrowResourceNotFoundException_WhenSceneIdIsNull() {
         // Arrange
@@ -231,6 +244,7 @@ class SceneServiceIT {
                 .hasMessageContaining("Scene not found with id: null");
     }
 
+    // Verifies that a scene cannot be moved to an unknown chapter.
     @Test
     void updateScene_ShouldThrowResourceNotFoundException_WhenChapterDoesNotExist() {
         // Arrange
@@ -246,6 +260,7 @@ class SceneServiceIT {
                 .hasMessageContaining("Chapter not found with id: " + request.getChapterId());
     }
 
+    // Verifies that a scene cannot be updated without a chapter id.
     @Test
     void updateScene_ShouldThrowInvalidDataAccessApiUsageException_WhenChapterIdIsNull() {
         // Arrange
@@ -261,6 +276,7 @@ class SceneServiceIT {
                 .hasMessageContaining("The given id must not be null");
     }
 
+    // Verifies that an existing scene can be deleted from the database.
     @Test
     void deleteScene_ShouldDeleteScene_WhenSceneExists() {
         // Arrange
@@ -274,6 +290,7 @@ class SceneServiceIT {
         assertThat(sceneRepository.existsById(sceneId)).isFalse();
     }
 
+    // Verifies that deleting an unknown scene id throws a not-found exception.
     @Test
     void deleteScene_ShouldThrowResourceNotFoundException_WhenSceneDoesNotExist() {
         // Arrange
@@ -285,6 +302,7 @@ class SceneServiceIT {
                 .hasMessageContaining("Scene not found with id: " + sceneId);
     }
 
+    // Verifies that deleting a scene with a null id is rejected.
     @Test
     void deleteScene_ShouldThrowInvalidDataAccessApiUsageException_WhenIdIsNull() {
         // Act + Assert
