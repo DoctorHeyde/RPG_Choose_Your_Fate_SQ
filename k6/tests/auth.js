@@ -1,6 +1,6 @@
 import http from 'k6/http';
 
-const BASE_URL = __ENV.BASE_URL || 'https://rpgchooseyourfatesq-production.up.railway.app';
+const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
 
 /**
  * Logs in and returns a JWT token.
