@@ -40,6 +40,12 @@ services:
       - rpg_mysql_sq:/var/lib/mysql
       - ./rpg_mysql_sq:/docker-entrypoint-initdb.d
     hostname: rpg_mysql_sq
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-123456}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   rpg_mysql_secondary:
     image: mysql:9.5.0
