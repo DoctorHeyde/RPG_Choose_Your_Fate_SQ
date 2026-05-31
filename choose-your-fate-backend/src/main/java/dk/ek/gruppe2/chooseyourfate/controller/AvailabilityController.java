@@ -6,6 +6,7 @@ import dk.ek.gruppe2.chooseyourfate.availability.failback.FailbackService;
 import dk.ek.gruppe2.chooseyourfate.availability.failover.FailoverService;
 import dk.ek.gruppe2.chooseyourfate.availability.health.PrimaryHealthService;
 import dk.ek.gruppe2.chooseyourfate.availability.replication.ReplicationQueue;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,7 @@ public class AvailabilityController {
     }
 
     @GetMapping("/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public AvailabilityStatusResponse status() {
         return new AvailabilityStatusResponse(
                 databaseRoutingService.state(),
@@ -49,18 +51,21 @@ public class AvailabilityController {
     }
 
     @PostMapping("/failover")
+    @PreAuthorize("hasRole('ADMIN')")
     public AvailabilityStatusResponse failover() {
         failoverService.triggerManualFailover();
         return status();
     }
 
     @PostMapping("/failback/begin")
+    @PreAuthorize("hasRole('ADMIN')")
     public AvailabilityStatusResponse beginFailback() {
         failbackService.beginManualFailback();
         return status();
     }
 
     @PostMapping("/failback/complete")
+    @PreAuthorize("hasRole('ADMIN')")
     public AvailabilityStatusResponse completeFailback() {
         failbackService.completeManualFailback();
         return status();
