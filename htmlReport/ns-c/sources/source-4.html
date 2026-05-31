@@ -1,0 +1,177 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AvailabilityController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dk.ek.gruppe2.chooseyourfate.controller</a>
+</div>
+
+<h1>Coverage Summary for Class: AvailabilityController (dk.ek.gruppe2.chooseyourfate.controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AvailabilityController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (6/20)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dk.ek.gruppe2.chooseyourfate.controller;
+&nbsp;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.availability.dto.AvailabilityStatusResponse;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.availability.routing.DatabaseRoutingService;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.availability.failback.FailbackService;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.availability.failover.FailoverService;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.availability.health.PrimaryHealthService;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.availability.replication.ReplicationQueue;
+&nbsp;import org.springframework.security.access.prepost.PreAuthorize;
+&nbsp;import org.springframework.web.bind.annotation.GetMapping;
+&nbsp;import org.springframework.web.bind.annotation.PostMapping;
+&nbsp;import org.springframework.web.bind.annotation.RequestMapping;
+&nbsp;import org.springframework.web.bind.annotation.RestController;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/availability&quot;)
+&nbsp;public class AvailabilityController {
+&nbsp;
+&nbsp;    private final DatabaseRoutingService databaseRoutingService;
+&nbsp;    private final PrimaryHealthService primaryHealthService;
+&nbsp;    private final ReplicationQueue replicationQueue;
+&nbsp;    private final FailoverService failoverService;
+&nbsp;    private final FailbackService failbackService;
+&nbsp;
+&nbsp;    public AvailabilityController(
+&nbsp;            DatabaseRoutingService databaseRoutingService,
+&nbsp;            PrimaryHealthService primaryHealthService,
+&nbsp;            ReplicationQueue replicationQueue,
+&nbsp;            FailoverService failoverService,
+<b class="fc">&nbsp;            FailbackService failbackService</b>
+<b class="fc">&nbsp;    ) {</b>
+<b class="fc">&nbsp;        this.databaseRoutingService = databaseRoutingService;</b>
+<b class="fc">&nbsp;        this.primaryHealthService = primaryHealthService;</b>
+<b class="fc">&nbsp;        this.replicationQueue = replicationQueue;</b>
+<b class="fc">&nbsp;        this.failoverService = failoverService;</b>
+&nbsp;        this.failbackService = failbackService;
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/status&quot;)
+<b class="nc">&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ADMIN&#39;)&quot;)</b>
+<b class="nc">&nbsp;    public AvailabilityStatusResponse status() {</b>
+<b class="nc">&nbsp;        return new AvailabilityStatusResponse(</b>
+<b class="nc">&nbsp;                databaseRoutingService.state(),</b>
+<b class="nc">&nbsp;                databaseRoutingService.activeRole(),</b>
+<b class="nc">&nbsp;                databaseRoutingService.isMaintenanceMode(),</b>
+<b class="nc">&nbsp;                primaryHealthService.consecutiveFailures(),</b>
+<b class="nc">&nbsp;                replicationQueue.pendingJobs().size(),</b>
+&nbsp;                replicationQueue.completedJobs().size(),
+&nbsp;                replicationQueue.deadLetterJobs().size()
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @PostMapping(&quot;/failover&quot;)</b>
+<b class="nc">&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ADMIN&#39;)&quot;)</b>
+&nbsp;    public AvailabilityStatusResponse failover() {
+&nbsp;        failoverService.triggerManualFailover();
+&nbsp;        return status();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @PostMapping(&quot;/failback/begin&quot;)</b>
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ADMIN&#39;)&quot;)
+&nbsp;    public AvailabilityStatusResponse beginFailback() {
+&nbsp;        failbackService.beginManualFailback();
+&nbsp;        return status();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @PostMapping(&quot;/failback/complete&quot;)
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ADMIN&#39;)&quot;)
+&nbsp;    public AvailabilityStatusResponse completeFailback() {
+&nbsp;        failbackService.completeManualFailback();
+&nbsp;        return status();
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-05-31 14:48</div>
+</div>
+</body>
+</html>

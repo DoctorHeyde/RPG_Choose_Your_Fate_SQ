@@ -1,0 +1,172 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SceneLookaheadResponseDTO</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dk.ek.gruppe2.chooseyourfate.dto.scene</a>
+</div>
+
+<h1>Coverage Summary for Class: SceneLookaheadResponseDTO (dk.ek.gruppe2.chooseyourfate.dto.scene)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SceneLookaheadResponseDTO</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (5/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    65,2%
+  </span>
+  <span class="absValue">
+    (15/23)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dk.ek.gruppe2.chooseyourfate.dto.scene;
+&nbsp;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.dto.choice.ChoiceResponseDTO;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.model.mysql.Choice;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.model.mysql.Scene;
+&nbsp;
+&nbsp;import java.util.Comparator;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;public class SceneLookaheadResponseDTO {
+&nbsp;    private SceneResponseDTO scene;
+&nbsp;    private List&lt;ChoiceResponseDTO&gt; choices;
+&nbsp;    private List&lt;SceneResponseDTO&gt; destinationScenes;
+&nbsp;
+<b class="nc">&nbsp;    public SceneLookaheadResponseDTO() {</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SceneLookaheadResponseDTO(
+&nbsp;            SceneResponseDTO scene,
+&nbsp;            List&lt;ChoiceResponseDTO&gt; choices,
+&nbsp;            List&lt;SceneResponseDTO&gt; destinationScenes
+<b class="nc">&nbsp;    ) {</b>
+<b class="nc">&nbsp;        this.scene = scene;</b>
+<b class="nc">&nbsp;        this.choices = choices;</b>
+<b class="nc">&nbsp;        this.destinationScenes = destinationScenes;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;    public SceneLookaheadResponseDTO(Scene scene) {</b>
+<b class="fc">&nbsp;        this.scene = new SceneResponseDTO(scene);</b>
+<b class="fc">&nbsp;        this.choices = scene.getChoices()</b>
+<b class="fc">&nbsp;                .stream()</b>
+<b class="fc">&nbsp;                .sorted(Comparator.comparing(Choice::getId))</b>
+<b class="fc">&nbsp;                .map(ChoiceResponseDTO::new)</b>
+<b class="fc">&nbsp;                .toList();</b>
+<b class="fc">&nbsp;        this.destinationScenes = scene.getChoices()</b>
+<b class="fc">&nbsp;                .stream()</b>
+<b class="fc">&nbsp;                .map((choice) -&gt; {</b>
+<b class="fc">&nbsp;            return new SceneResponseDTO(choice.getDestinationScene());</b>
+&nbsp;        })
+<b class="fc">&nbsp;                .toList();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SceneResponseDTO getScene() {
+<b class="fc">&nbsp;        return scene;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setScene(SceneResponseDTO scene) {
+<b class="nc">&nbsp;        this.scene = scene;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;ChoiceResponseDTO&gt; getChoices() {
+<b class="fc">&nbsp;        return choices;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setChoices(List&lt;ChoiceResponseDTO&gt; choices) {
+<b class="nc">&nbsp;        this.choices = choices;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;SceneResponseDTO&gt; getDestinationScenes() {
+<b class="fc">&nbsp;        return destinationScenes;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setDestinationScenes(List&lt;SceneResponseDTO&gt; destinationScenes) {
+<b class="nc">&nbsp;        this.destinationScenes = destinationScenes;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-05-31 14:48</div>
+</div>
+</body>
+</html>

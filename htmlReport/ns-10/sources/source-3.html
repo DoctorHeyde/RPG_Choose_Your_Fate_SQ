@@ -1,0 +1,161 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SceneResponseDTO</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dk.ek.gruppe2.chooseyourfate.dto.scene</a>
+</div>
+
+<h1>Coverage Summary for Class: SceneResponseDTO (dk.ek.gruppe2.chooseyourfate.dto.scene)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SceneResponseDTO</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (4/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36,8%
+  </span>
+  <span class="absValue">
+    (7/19)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dk.ek.gruppe2.chooseyourfate.dto.scene;
+&nbsp;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.model.mysql.Scene;
+&nbsp;
+&nbsp;public class SceneResponseDTO {
+&nbsp;    private String id;
+&nbsp;    private String chapterId;
+&nbsp;    private String name;
+&nbsp;
+<b class="nc">&nbsp;    public SceneResponseDTO() {</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SceneResponseDTO(String id, String name, String chapterId) {</b>
+<b class="nc">&nbsp;        this.id = id;</b>
+<b class="nc">&nbsp;        this.name = name;</b>
+<b class="nc">&nbsp;        this.chapterId = chapterId;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public SceneResponseDTO(Scene scene) {</b>
+<b class="fc">&nbsp;        this.id = scene.getId().toString();</b>
+<b class="fc">&nbsp;        this.name = scene.getName();</b>
+<b class="fc">&nbsp;        this.chapterId = scene.getChapter().getId().toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SceneResponseDTO toDTO(Scene scene) {
+<b class="nc">&nbsp;        return new SceneResponseDTO(</b>
+<b class="nc">&nbsp;                scene.getId().toString(),</b>
+<b class="nc">&nbsp;                scene.getName(),</b>
+<b class="nc">&nbsp;                scene.getChapter().getId().toString()</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getId() {
+<b class="fc">&nbsp;        return id;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setId(String id) {
+<b class="nc">&nbsp;        this.id = id;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getName() {
+<b class="fc">&nbsp;        return name;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setName(String name) {
+<b class="nc">&nbsp;        this.name = name;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getChapterId() {
+<b class="fc">&nbsp;        return chapterId;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setChapterId(String chapterId) {
+<b class="nc">&nbsp;        this.chapterId = chapterId;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-05-31 14:48</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ManualDataSynchronizationService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dk.ek.gruppe2.chooseyourfate.availability.failback</a>
+</div>
+
+<h1>Coverage Summary for Class: ManualDataSynchronizationService (dk.ek.gruppe2.chooseyourfate.availability.failback)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ManualDataSynchronizationService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dk.ek.gruppe2.chooseyourfate.availability.failback;
+&nbsp;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;import org.springframework.stereotype.Service;
+<b class="fc">&nbsp;</b>
+&nbsp;@Service
+&nbsp;public class ManualDataSynchronizationService implements DataSynchronizationService {
+&nbsp;
+&nbsp;    private static final Logger log = LoggerFactory.getLogger(ManualDataSynchronizationService.class);
+<b class="fc">&nbsp;</b>
+&nbsp;    @Override
+&nbsp;    public void synchronizeSecondaryToPrimary() {
+&nbsp;        log.warn(&quot;=== MANUAL SECONDARY-TO-PRIMARY SYNC REQUIRED ===&quot;);
+&nbsp;        log.warn(&quot;Automatic sync is not implemented. In production, a DBA must run&quot;);
+&nbsp;        log.warn(&quot;reviewed SQL sync scripts BEFORE completing failback. Failback is&quot;);
+&nbsp;        log.warn(&quot;proceeding without sync — data written to secondary during the&quot;);
+&nbsp;        log.warn(&quot;failover window may be lost on the next primary write.&quot;);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-05-31 14:48</div>
+</div>
+</body>
+</html>

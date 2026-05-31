@@ -1,0 +1,341 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CharacterService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dk.ek.gruppe2.chooseyourfate.service</a>
+</div>
+
+<h1>Coverage Summary for Class: CharacterService (dk.ek.gruppe2.chooseyourfate.service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CharacterService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (13/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (20/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (90/90)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dk.ek.gruppe2.chooseyourfate.service;
+&nbsp;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.dto.CharacterResponseDTO;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.dto.CharacterStatsDTO;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.dto.CharacterViewResponseDTO;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.dto.CreateCharacterRequestDTO;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.dto.MultipleCharacterViewsResponseDto;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.exception.ResourceNotFoundException;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.interfaces.CharacterDataAccess;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.model.mysql.Account;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.model.mysql.Chapter;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.model.mysql.CharacterAvatar;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.model.mysql.CharacterDetails;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.model.mysql.RaceDetails;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.model.mysql.Scene;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.repository.mysql.AccountRepository;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.repository.mysql.ChapterRepository;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.repository.mysql.CharacterAvatarRepository;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.repository.mysql.CharacterDetailsRepository;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.repository.mysql.RaceDetailsRepository;
+&nbsp;import dk.ek.gruppe2.chooseyourfate.repository.mysql.SceneRepository;
+&nbsp;import jakarta.persistence.EntityManager;
+&nbsp;import jakarta.persistence.ParameterMode;
+&nbsp;import jakarta.persistence.StoredProcedureQuery;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;@Service
+&nbsp;public class CharacterService implements CharacterDataAccess&lt;Integer&gt; {
+&nbsp;
+&nbsp;    private EntityManager entityManager;
+&nbsp;
+&nbsp;    private final CharacterAvatarRepository characterAvatarRepository;
+&nbsp;    private final ChapterRepository chapterRepository;
+&nbsp;    private final SceneRepository sceneRepository;
+&nbsp;    private final RaceDetailsRepository raceDetailsRepository;
+&nbsp;
+&nbsp;    private final CharacterDetailsRepository characterDetailsRepository;
+&nbsp;    private final AccountRepository accountRepository;
+&nbsp;
+&nbsp;    public CharacterService(
+&nbsp;            CharacterAvatarRepository characterAvatarRepository,
+&nbsp;            ChapterRepository chapterRepository,
+&nbsp;            SceneRepository sceneRepository,
+&nbsp;            RaceDetailsRepository raceDetailsRepository,
+&nbsp;            EntityManager entityManager,
+&nbsp;            CharacterDetailsRepository characterDetailsRepository,
+&nbsp;            AccountRepository accountRepository
+<b class="fc">&nbsp;    ) {</b>
+<b class="fc">&nbsp;        this.characterAvatarRepository = characterAvatarRepository;</b>
+<b class="fc">&nbsp;        this.characterDetailsRepository = characterDetailsRepository;</b>
+<b class="fc">&nbsp;        this.chapterRepository = chapterRepository;</b>
+<b class="fc">&nbsp;        this.sceneRepository = sceneRepository;</b>
+<b class="fc">&nbsp;        this.raceDetailsRepository = raceDetailsRepository;</b>
+<b class="fc">&nbsp;        this.accountRepository = accountRepository;</b>
+<b class="fc">&nbsp;        this.entityManager = entityManager;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;CharacterResponseDTO&gt; getAllCharacters() {
+<b class="fc">&nbsp;        return characterAvatarRepository.findAll()</b>
+<b class="fc">&nbsp;                .stream()</b>
+<b class="fc">&nbsp;                .map(this::toDto)</b>
+<b class="fc">&nbsp;                .toList();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public CharacterResponseDTO getCharacterById(Integer id) {
+<b class="fc">&nbsp;        return toDto(getCharacterEntity(id));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Builds one SQL-backed character view so the frontend does not need separate character and detail requests.
+&nbsp;    @Override
+&nbsp;    public MultipleCharacterViewsResponseDto getCharactersViewBy_AccountId(Integer id) {
+<b class="fc">&nbsp;        long characterCount = characterAvatarRepository.countByAccount_Id(id);</b>
+&nbsp;
+<b class="fc">&nbsp;        List&lt;CharacterAvatar&gt; characters = getCharacterentitesByAccountId(id);</b>
+&nbsp;        
+<b class="fc">&nbsp;        List&lt;CharacterViewResponseDTO&gt; views = new ArrayList&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;        for (CharacterAvatar character : characters) {</b>
+<b class="fc">&nbsp;            CharacterDetails details = getCharacterDetailsEntity(character.getId());</b>
+<b class="fc">&nbsp;            views.add(toViewDto(character, details));</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Account account = accountRepository.findById(id)</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;account not found with id: &quot; + id));</b>
+&nbsp;        
+<b class="fc">&nbsp;        Boolean canCreateMoreCharacters = characterCount &lt; account.getCharacterLimit();</b>
+&nbsp;
+<b class="fc">&nbsp;        return new MultipleCharacterViewsResponseDto(views, canCreateMoreCharacters);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public CharacterResponseDTO createCharacter(Integer accountId, CreateCharacterRequestDTO request) {
+<b class="fc">&nbsp;        if (request.getChapterId() == null || request.getSceneId() == null) {</b>
+<b class="fc">&nbsp;            RaceDetails raceDetails = raceDetailsRepository.findById(request.getRaceDetailsId())</b>
+<b class="fc">&nbsp;                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Race details not found with id: &quot; + request.getRaceDetailsId()));</b>
+&nbsp;
+<b class="fc">&nbsp;            Chapter startingChapter = raceDetails.getStartingChapter();</b>
+<b class="fc">&nbsp;            if (startingChapter == null) {</b>
+<b class="fc">&nbsp;                throw new ResourceNotFoundException(&quot;Starting chapter not configured for race details with id: &quot; + request.getRaceDetailsId());</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            Scene startingScene = startingChapter.getStartingScene();</b>
+<b class="fc">&nbsp;            if (startingScene == null) {</b>
+<b class="fc">&nbsp;                throw new ResourceNotFoundException(&quot;Starting scene not configured for race details with id: &quot; + request.getRaceDetailsId());</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            request.setChapterId(startingChapter.getId());</b>
+<b class="fc">&nbsp;            request.setSceneId(startingScene.getId());</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        validateCreateRequest(request);</b>
+&nbsp;
+<b class="fc">&nbsp;        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery(&quot;sp_create_character&quot;);</b>
+<b class="fc">&nbsp;        storedProcedure.registerStoredProcedureParameter(&quot;p_account_id&quot;, Integer.class, ParameterMode.IN);</b>
+<b class="fc">&nbsp;        storedProcedure.registerStoredProcedureParameter(&quot;p_chapter_id&quot;, Integer.class, ParameterMode.IN);</b>
+<b class="fc">&nbsp;        storedProcedure.registerStoredProcedureParameter(&quot;p_scene_id&quot;, Integer.class, ParameterMode.IN);</b>
+<b class="fc">&nbsp;        storedProcedure.registerStoredProcedureParameter(&quot;p_race_detail_id&quot;, Integer.class, ParameterMode.IN);</b>
+<b class="fc">&nbsp;        storedProcedure.registerStoredProcedureParameter(&quot;p_name&quot;, String.class, ParameterMode.IN);</b>
+<b class="fc">&nbsp;        storedProcedure.registerStoredProcedureParameter(&quot;p_character_id&quot;, Integer.class, ParameterMode.OUT);</b>
+&nbsp;
+<b class="fc">&nbsp;        storedProcedure.setParameter(&quot;p_account_id&quot;, accountId);</b>
+<b class="fc">&nbsp;        storedProcedure.setParameter(&quot;p_chapter_id&quot;, request.getChapterId());</b>
+<b class="fc">&nbsp;        storedProcedure.setParameter(&quot;p_scene_id&quot;, request.getSceneId());</b>
+<b class="fc">&nbsp;        storedProcedure.setParameter(&quot;p_race_detail_id&quot;, request.getRaceDetailsId());</b>
+<b class="fc">&nbsp;        storedProcedure.setParameter(&quot;p_name&quot;, request.getName());</b>
+&nbsp;
+<b class="fc">&nbsp;        storedProcedure.execute();</b>
+&nbsp;
+<b class="fc">&nbsp;        Integer createdCharacterId = (Integer) storedProcedure.getOutputParameterValue(&quot;p_character_id&quot;);</b>
+<b class="fc">&nbsp;        return toDto(getCharacterEntity(createdCharacterId));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void deleteCharacter(Integer id) {
+<b class="fc">&nbsp;        if (!characterAvatarRepository.existsById(id)) {</b>
+<b class="fc">&nbsp;            throw new ResourceNotFoundException(&quot;Character not found with id: &quot; + id);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        StoredProcedureQuery storedProcedure = entityManager.createStoredProcedureQuery(&quot;sp_delete_character&quot;);</b>
+<b class="fc">&nbsp;        storedProcedure.registerStoredProcedureParameter(&quot;p_character_id&quot;, Integer.class, ParameterMode.IN);</b>
+<b class="fc">&nbsp;        storedProcedure.setParameter(&quot;p_character_id&quot;, id);</b>
+<b class="fc">&nbsp;        storedProcedure.execute();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //Made to retreive all characters connected to the account that is logged in.
+&nbsp;    @Override
+&nbsp;    public List&lt;CharacterResponseDTO&gt; getCharactersByAccountId(Integer id) {
+<b class="fc">&nbsp;        return getCharacterentitesByAccountId(id).stream()</b>
+<b class="fc">&nbsp;                .map(this::toDto)</b>
+<b class="fc">&nbsp;                .toList();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;CharacterAvatar&gt; getCharacterentitesByAccountId(Integer id) {
+<b class="fc">&nbsp;        return characterAvatarRepository.findByAccount_Id(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private CharacterAvatar getCharacterEntity(Integer id) {
+<b class="fc">&nbsp;        return characterAvatarRepository.findById(id)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Character not found with id: &quot; + id));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Loads the auto-created stats row for a character.
+&nbsp;    private CharacterDetails getCharacterDetailsEntity(Integer characterId) {
+<b class="fc">&nbsp;        return characterDetailsRepository.findByIdWithCharacterView(characterId)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Character details not found for character id: &quot; + characterId));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // In this SQL implementation, referenced entities are validated before insert so the service fails fast with clear errors
+&nbsp;    // and avoids database-level foreign key violations. This method also enforces domain-specific consistency, such as
+&nbsp;    // ensuring that the selected scene belongs to the selected chapter.
+&nbsp;    private void validateCreateRequest(CreateCharacterRequestDTO request) {
+<b class="fc">&nbsp;        if (!chapterRepository.existsById(request.getChapterId())) {</b>
+<b class="fc">&nbsp;            throw new ResourceNotFoundException(&quot;Chapter not found with id: &quot; + request.getChapterId());</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (!raceDetailsRepository.existsById(request.getRaceDetailsId())) {</b>
+<b class="fc">&nbsp;            throw new ResourceNotFoundException(&quot;Race details not found with id: &quot; + request.getRaceDetailsId());</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        var scene = sceneRepository.findById(request.getSceneId())</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Scene not found with id: &quot; + request.getSceneId()));</b>
+&nbsp;
+<b class="fc">&nbsp;        if (!scene.getChapter().getId().equals(request.getChapterId())) {</b>
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;Selected scene does not belong to the selected chapter.&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private CharacterResponseDTO toDto(CharacterAvatar character) {
+<b class="fc">&nbsp;        return new CharacterResponseDTO(</b>
+<b class="fc">&nbsp;                character.getId(),</b>
+<b class="fc">&nbsp;                character.getAccount().getId(),</b>
+<b class="fc">&nbsp;                character.getChapter().getId(),</b>
+<b class="fc">&nbsp;                character.getScene().getId(),</b>
+<b class="fc">&nbsp;                character.getRaceDetails().getId(),</b>
+<b class="fc">&nbsp;                character.getName(),</b>
+<b class="fc">&nbsp;                character.getFlag()</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // Maps character and detail data to the combined character view response.
+&nbsp;    private CharacterViewResponseDTO toViewDto(
+&nbsp;            CharacterAvatar character,
+&nbsp;            CharacterDetails details
+&nbsp;    ) {
+<b class="fc">&nbsp;        return new CharacterViewResponseDTO(</b>
+<b class="fc">&nbsp;                character.getId(),</b>
+<b class="fc">&nbsp;                character.getName(),</b>
+<b class="fc">&nbsp;                character.getChapter().getId(),</b>
+<b class="fc">&nbsp;                character.getChapter().getName(),</b>
+<b class="fc">&nbsp;                character.getRaceDetails().getId(),</b>
+<b class="fc">&nbsp;                character.getRaceDetails().getName(),</b>
+&nbsp;                new CharacterStatsDTO(
+<b class="fc">&nbsp;                        details.getIntelligence(),</b>
+<b class="fc">&nbsp;                        details.getCharisma(),</b>
+<b class="fc">&nbsp;                        details.getFashion()</b>
+&nbsp;                )
+&nbsp;        );
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-05-31 14:48</div>
+</div>
+</body>
+</html>
