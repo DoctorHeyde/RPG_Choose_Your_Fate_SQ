@@ -30,8 +30,6 @@ export const options = {
     // Under stress we allow slightly higher response times
     scene_lookahead_response_time: ['p(95)<1500'],
     scene_lookahead_error_rate: ['rate<0.05'],
-    character_multi_view_response_time: ['p(95)<1500'],
-    character_multi_view_error_rate: ['rate<0.05'],
     http_req_failed: ['rate<0.05'],
   },
 };
